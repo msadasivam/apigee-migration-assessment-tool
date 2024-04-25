@@ -26,7 +26,7 @@ COPY requirements.txt requirements.txt
 # Install dependencies
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
-RUN apt install graphviz
+RUN apk add graphviz
 
 # Define volumes to persist output
 VOLUME ["/app/target"]
