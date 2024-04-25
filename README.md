@@ -2,7 +2,7 @@
 
 This repository houses the Apigee Migration Assessment tool, a Python-developed utility. The tool evaluates a source Apigee 4G environment (Edge OPDK or Edge SaaS) and generates a report to aid in planning your migration to Apigee 5G (Apigee X or Apigee Hybrid).
 
-# Preparing the tooling 
+# Pre-requisites
 You can run the tool locally or you can use a docker image.
 
 * For local run you will have to install the required python libraries and dependent tools.
@@ -48,7 +48,7 @@ docker run ashwinknaik/apigee-migration-assessment-tool:1
 ```
 
 
-## Specify Inputs
+# Specify Inputs
 
 Create an `input.properties` file with the following data-
 
