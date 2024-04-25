@@ -4,9 +4,18 @@
 
 * Install Graphviz following https://graphviz.org/download/
 
-* Install Python dependencies
+* Install Python venv
+
 ```
-python3 -m pip install -r requirements.txt
+python3 -m pip install virtualenv==20.24.4
+```
+
+* Install Python dependencies inside virtual env
+
+```
+python3 -m venv dev
+source dev/bin/activate
+pip install -r requirements.txt
 ```
 
 # Specify Inputs
@@ -47,7 +56,14 @@ CSV_REPORT=report.csv
 
 # Usage 
 
-The utility supports the below arguments
+To generate the Migration assessment report for all Apigee Objects run the command
+
+```
+python3 main.py --resources all
+```
+
+
+To selectively assess only certain Apigee Objects. The utility also supports the below arguments. 
 
 * `--resources RESOURCES` resources can be one of or comma seperated list of
 ```                   
@@ -79,37 +95,19 @@ python3 main.py --resources targetservers
 
 ```
 
-# Configure Logging
 
-## Set Log Level
-Supported Levels: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
+# Accessing the report
 
-Default Level: INFO
-```
-export LOGLEVEL="INFO"
-```
+Once the tool is run, it will create a file called `qualification_report.xlsx`
 
-## Set Log Handler/Output
-Supported Values: File, Stream
+You can import it to Google Sheets or any other application which can read `.xlsx` format
 
-Default: Stream
 
-```
-export LOG_HANDLER="File"
-```
+# Accessing the visualisation
 
-## Set Log file path 
-Condition: if File handler is selected
+Once the tool is run, it will create a file called `visualization.html`
 
-Default: app.log
-```
-export LOG_FILE_PATH="/path/to/log/file.log"
-```
+You can access it by opening it in any browser
 
-## Toggle to show exec info for error logs
-Supported Values: True, False
-
-Default: False
-```
-export EXEC_INFO="True"
-```
+### Sample visualisation
+![alt text](assets/visualization.png)
