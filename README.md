@@ -1,8 +1,19 @@
 # Apigee Migration Assessment Tool
 
-# Depedencies  
+This repository houses the Apigee Migration Assessment tool, a Python-developed utility. The tool evaluates a source Apigee 4G environment (Edge OPDK or Edge SaaS) and generates a report to aid in planning your migration to Apigee 5G (Apigee X or Apigee Hybrid).
+
+# Preparing the tooling 
+You can run the tool locally or you can use a docker image.
+
+* For local run you will have to install the required python libraries and dependent tools.
+* For docker run , you can build the image your self or pull the publicly avaialable docker image
+
+## Local setup
+
+#### Install Depedencies  
 
 * Install Graphviz following https://graphviz.org/download/
+
 
 * Install Python venv
 
@@ -18,7 +29,26 @@ source dev/bin/activate
 pip install -r requirements.txt
 ```
 
-# Specify Inputs
+## Docker setup
+
+#### Build your own docker image
+You can build your own docker image using the `Dockerfile` provided
+```
+docker build -t <image>:<tag> .
+docker run <image>:<tag>
+```
+
+#### Use image from dockerhub
+
+You can use  pre-built docker image by pulling using the `ashwinknaik/apigee-migration-assessment-tool:1`
+
+```
+docker pull ashwinknaik/apigee-migration-assessment-tool:1
+docker run ashwinknaik/apigee-migration-assessment-tool:1
+```
+
+
+## Specify Inputs
 
 Create an `input.properties` file with the following data-
 
