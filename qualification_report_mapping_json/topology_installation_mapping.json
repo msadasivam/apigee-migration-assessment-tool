@@ -1,0 +1,4 @@
+{
+    "headers": ["Data center", "Pod", "Component", "Internal IP", "Internal Hostname", "Is Up", "Reachable"],
+    "key_mapping": ["internalIP", "internalHostName", "isUp", "reachable"]
+}

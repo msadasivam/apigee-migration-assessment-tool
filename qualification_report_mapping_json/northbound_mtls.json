@@ -1,0 +1,10 @@
+{
+    "headers": ["Organization", "Environment","Vhost Name", "One way TLS","mTLS" , "Keystore"],
+    "info_block": {
+        "text": "<b>[Feature Parity] Northbound mTLS\n\nApigee X leverages Google Load Balancer for supporting Northbound mTLS.\n\n<iu>Workaround:\nmTLS in GLB is currently in Public Preview.",
+        "text_line_no_for_col_count": 2,
+        "col_merge": 6,
+        "start_row": 2,
+        "end_row": 16
+    }
+}

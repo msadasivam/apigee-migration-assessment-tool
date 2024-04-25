@@ -1,0 +1,12 @@
+{
+    "type": {
+        "invalid_values": {
+            "node": {
+                "message": "Files with type node are not supported in Apigee X/Hybrid"
+            },
+            "hosted": {
+                "message": "Hosted Targets are not supported in Apigee X/Hybrid"
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "headers": ["Organization", "Api Name", "Policy", "Usage Count"],
+    "info_block": {
+        "text": "<b>[Product Updates] JSONPath Enabled\n\nApigee X's JSONPath version has been upgraded to 2.4.0 which is now compliant to JSONPath Specification. As a result of this move, any usage of this in Apigee Edge (now in version 0.8.0) will stop working as we move the API to Apigee X.\n\n<iu>Fix:\nDuring the upgrade process, API will have to be updated to support the 2.4.0 JSONPath version.",
+        "text_line_no_for_col_count": 5,
+        "col_merge": 3,
+        "start_row": 2,
+        "end_row": 12
+    }
+}

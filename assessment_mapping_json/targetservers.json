@@ -1,0 +1,12 @@
+{
+    "host": {
+        "invalid_values": {
+            "localhost": {
+                "message": "localhost is not valid FQDN value"
+            },
+            "127.0.0.1": {
+                "message": "127.0.0.1 is not valid IP for APIGEE-X"
+            }
+        }
+    }
+}

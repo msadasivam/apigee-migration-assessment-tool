@@ -1,0 +1,25 @@
+{
+    "headers": ["Organization", "Api Name", "Api Policy", "Antip - Quota Distributed", "Antip - Quota Synchronous"],
+    "link":[{
+        "link_text": "Quota Non Synchronous",
+        "link": "https://docs.apigee.com/api-platform/reference/policies/quota-policy#synchronous"
+    },
+    {
+        "link_text": "Quota Non Distributed",
+        "link": "https://docs.apigee.com/api-platform/antipatterns/non-distributed-quota"
+    }
+],
+    "info_block": [{
+        "text": "<b>[Anti-pattern] Quota Non Distributed\nPlease refer to this documentation for details and suggested fix.",
+        "col_merge": 1,
+        "start_row": 2,
+        "end_row": 5,
+        "text_line_no_for_col_count": 1
+    },
+    {
+        "text": "<b>[Anti-pattern] Quota Non Synchronous\nPlease refer to this documentation for details and suggested fix.",
+        "col_merge": 1,
+        "start_row": 7,
+        "end_row": 10
+    }]
+}

@@ -1,0 +1,11 @@
+{
+    "gateway": {
+        "bgcolor": "#d0e2f3" 
+    },
+    "central": {
+        "bgcolor": "#f4cdcc" 
+    },
+    "analytics": {
+        "bgcolor": "#fff2cc" 
+    }
+}

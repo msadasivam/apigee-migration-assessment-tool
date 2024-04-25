@@ -1,0 +1,106 @@
+{
+    "header_text": "Apigee X Upgrade Qualification Summary",
+    "col_merge": 2,
+    "col_width":50,
+    "header_row": 1,
+    "blocks":[{
+        "header": "Outstanding Feature Parity",
+        "sheets": [{
+            "text_col": "Proxies Per Env",
+            "link_of_text": "internal:'Proxies Per Env'!A1",
+            "result_col": "=IF(OR(MAX('Proxies Per Env'!C:C)>50, MAX('Proxies Per Env'!E:E)>60), \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Northbound mTLS",
+            "link_of_text": "internal:'Northbound mTLS'!A1",
+            "result_col": "=IF(COUNTIF('Northbound mTLS'!D:D, \"true*\")>0, \"FAILED\",\"PASSED\")"
+        },
+        {
+            "text_col": "Company And Developers",
+            "link_of_text": "internal:'Company And Developers'!A1",
+            "result_col": "=IF(COUNTA('Company And Developers'!B:B)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Org Level Resourcefiles",
+            "link_of_text": "internal:'Org Level Resourcefiles'!A1",
+            "result_col": "=IF(COUNTA('Org Level Resourcefiles'!B:B)>1, \"FAILED\", \"PASSED\")"
+        }]
+    },
+    {
+        "header": "Anti-patterns",
+        "sheets": [{
+            "text_col": "Anti Patterns",
+            "link_of_text": "internal:'Anti Patterns'!A1",
+            "result_col": "=IF(OR(COUNTIF('Anti Patterns'!D:D, \"false*\")>0,COUNTIF('Anti Patterns'!E:E, \"true*\")>0), \"FAILED\",\"PASSED\")"
+        },
+        {
+            "text_col": "CName Anamoly",
+            "link_of_text": "internal:'CName Anomaly'!A1",
+            "result_col": "=IF(COUNTA('CName Anomaly'!C:C)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Apps Without API Products",
+            "link_of_text": "internal:'Apps Without ApiProducts'!A1",
+            "result_col": "=IF(COUNTA('Apps Without ApiProducts'!C:C)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Product Limits - API Limits",
+            "link_of_text": "internal:'Product Limits - API Limits'!A1",
+            "result_col": "=IF(MAX('Product Limits - API Limits'!C:C)>250, \"FAILED\",\"PASSED\")"
+        },
+        {
+            "text_col": "Product Limits - Env Limits",
+            "link_of_text": "internal:'Product Limits - Env Limits'!A1",
+            "result_col": "=IF(OR(MAX('Product Limits - Env Limits'!C:C)>1000, MAX('Product Limits - Env Limits'!F:F)>100), \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Product Limits - Org Limits",
+            "link_of_text": "internal:'Product Limits - Org Limits'!A1",
+            "result_col": "=IF(MAX('Product Limits - Org Limits'!C:C)>100, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Cache Without Expiry",
+            "link_of_text": "internal:'Cache Without Expiry'!A1",
+            "result_col": "=IF(COUNTA('Cache Without Expiry'!B:B)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "APIs with Multiple BasePaths",
+            "link_of_text": "internal:'APIs With Multiple BasePaths'!A1",
+            "result_col": "=IF(ArrayFormula(MAX(COUNTIF('APIs With Multiple BasePaths'!B2:B971, 'APIs With Multiple BasePaths'!B2:B971))) > 5, \"FAILED\", \"PASSED\")"
+        }]
+    },
+    {
+        "header": "Product Updates",
+        "sheets": [{
+            "text_col": "Unsupported Policies",
+            "link_of_text": "internal:'Unsupported Policies'!A1",
+            "result_col": "=IF(COUNTA('Unsupported Policies'!D:D)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "JSONPath Version Update",
+            "link_of_text": "internal:'Json Path Enabled'!A1",
+            "result_col": "=IF(COUNTA('Json Path Enabled'!D:D)>1, \"FAILED\", \"PASSED\")"
+        },
+        {
+            "text_col": "Keystore aliases with private keys",
+            "link_of_text": "internal:'Aliases with private keys'!A1",
+            "result_col": "=IF(COUNTA('Aliases with private keys'!E:E)>1, \"FAILED\", \"PASSED\")"
+        }]
+    },
+    {
+        "header": "APIGEE Edge/OPDK (4G) Installation Topology",
+        "APIGEE_SOURCE": "OPDK",
+        "sheets": [{
+            "text_col": "Apigee (4G) components",
+            "link_of_text": "internal:'Apigee (4G) components'!A1",
+            "result_col": "=\"NA\""
+        }]
+    }],
+    "note_list":{
+        "skip_rows": 1,
+        "notes":[{
+            "text": "***NOTE: This report generator is currently in beta version. If you encounter any inaccuracies, we would love to know about them. Please drop a comment into the spreadsheet and we will investigate/fix them on our end.",
+            "bg_color": "blue"
+        }]
+    }
+}
