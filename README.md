@@ -36,10 +36,10 @@ NW_TOPOLOGY_MAPPING=pod_component_mapping.json
 DATA_CENTER_MAPPING=data_center_mapping.json
 
 [report]
-QUALIFICATION_REPORT=qualification_report.xlsx
+QUALIFICATION_REPORT=qualification_report.xlsx # Default - qualification_report.xlsx
 
 [visualize]
-VISUALIZATION_GRAPH_FILE=visualization.html
+VISUALIZATION_GRAPH_FILE=visualization.html    # Default - visualization.html
 
 [validate]
 CSV_REPORT=report.csv

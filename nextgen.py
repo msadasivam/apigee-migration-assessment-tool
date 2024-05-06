@@ -27,7 +27,12 @@ class ApigeeNewGen():
         self.token = token
         self.env_type = env_type or 'ENVIRONMENT_TYPE_UNSPECIFIED'
         self.client = RestClient('oauth', token)
-
+    
+    def get_org(self):
+        url = f"{self.baseurl}/organizations/{self.project_id}"
+        org = self.client.get(url)
+        return org
+    
     def get_env_object(self, env, env_object, env_object_name):
         if env_object == 'resourcefiles':
             url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name['type']}/{env_object_name['name']}"
