@@ -60,6 +60,11 @@ def main():
     args = parser.parse_args()
     resources_list = args.resources.split(',') if args.resources else []
 
+    # Pre validation checks
+    if(not pre_validation_checks(cfg)):
+        logger.error("Pre validation checks failed. Please, check...")
+        return
+
     export_data = {}
     topology_mapping = {}
     export_data_file = f"{cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}/{cfg.get('export', 'EXPORT_FILE')}"

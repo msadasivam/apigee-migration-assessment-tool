@@ -15,6 +15,8 @@
 # limitations under the License
 
 from exporter import ApigeeExporter
+from classic import ApigeeClassic
+from nextgen import ApigeeNewGen
 from validator import ApigeeValidator
 from qualification_report import QualificationReport
 from topology import ApigeeTopology
@@ -28,7 +30,66 @@ seperator = ' | '
 DEFAULT_GCP_ENV_TYPE = 'BASE'
 
 
+def pre_validation_checks(cfg):
+    logger.info(
+        "------------------- Pre Validation Checks -----------------------")
+
+    # validate input.properties
+    required_keys = {
+        "inputs": ["SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE", "SOURCE_UI_URL", "SOURCE_APIGEE_VERSION", "GCP_PROJECT_ID", "GCP_ENV_TYPE", "API_URL", "TARGET_DIR"],
+        "export": ["EXPORT_DIR", "EXPORT_FILE"],
+        "topology": ["TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
+        "validate": ["CSV_REPORT"]
+    }
+    missing_keys = []
+
+    for section, keys in required_keys.items():
+        if section in cfg:
+            section_keys = cfg[section]
+            for key in keys:
+                if key not in section_keys:
+                    missing_keys.append((section, key))
+        else:
+            logger.error(f"Section {section} is missing in input.properties")
+            return False
+
+    if missing_keys:
+        logger.error("Missing keys in input.properties:")
+        for section, key in missing_keys:
+            logger.error(f" - Section: {section}, Key: {key}")
+        return False
+    else:
+        logger.info("All required keys are present in input.properties")
+
+    # check for source org
+    SOURCE_URL = cfg.get('inputs', 'SOURCE_URL')
+    SOURCE_ORG = cfg.get('inputs', 'SOURCE_ORG')
+    SOURCE_AUTH_TOKEN = get_source_auth_token()
+    SOURCE_AUTH_TYPE = cfg.get('inputs', 'SOURCE_AUTH_TYPE')
+    opdk = ApigeeClassic(SOURCE_URL, SOURCE_ORG,
+                         SOURCE_AUTH_TOKEN, SOURCE_AUTH_TYPE)
+
+    if (not opdk.get_org()):
+        logger.error(f"No source organizations found")
+        return False
+
+    # check for target org
+    GCP_PROJECT_ID = cfg.get('inputs', 'GCP_PROJECT_ID')
+    GCP_TOKEN = get_access_token()
+    GCP_ENV_TYPE = cfg.get('inputs', 'GCP_ENV_TYPE',
+                           fallback=DEFAULT_GCP_ENV_TYPE)
+
+    xorhybrid = ApigeeNewGen(GCP_PROJECT_ID, GCP_TOKEN, GCP_ENV_TYPE)
+    org_obj = xorhybrid.get_org()
+    if (org_obj.get("error")):
+        logger.error(
+            f"No target organizations found. ERROR-INFO - {org_obj['error'].get('message','No error Info found.')}")
+        return False
+    return True
+
+
 def export_artifacts(cfg, resources_list):
+    logger.info('------------------- EXPORT -----------------------')
     SOURCE_URL = cfg.get('inputs', 'SOURCE_URL')
     SOURCE_ORG = cfg.get('inputs', 'SOURCE_ORG')
     SOURCE_AUTH_TOKEN = get_source_auth_token()
@@ -45,7 +106,6 @@ def export_artifacts(cfg, resources_list):
         SOURCE_AUTH_TOKEN,
         SOURCE_AUTH_TYPE
     )
-    logger.info('------------------- EXPORT -----------------------')
     export_data = apigeeExport.get_export_data(resources_list, EXPORT_DIR)
     logger.debug(export_data)
     apigeeExport.create_export_state(EXPORT_DIR)
@@ -255,7 +315,8 @@ def visualize_artifacts(cfg, export_data, report):
                   width=1000, height=800)
     net.from_nx(G)
     TARGET_DIR = cfg.get('inputs', 'TARGET_DIR')
-    VISUALIZATION_GRAPH_FILE = cfg.get('visualize', 'VISUALIZATION_GRAPH_FILE')
+    VISUALIZATION_GRAPH_FILE = cfg.get(
+        'visualize', 'VISUALIZATION_GRAPH_FILE', fallback='visualization.html')
     net.show(f'{TARGET_DIR}/{VISUALIZATION_GRAPH_FILE}')
 
 
@@ -265,7 +326,8 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
 
     TARGET_DIR = cfg.get('inputs', 'TARGET_DIR')
     orgName = cfg.get('inputs', 'SOURCE_ORG')
-    QUALIFICATION_REPORT = cfg.get('report', 'QUALIFICATION_REPORT')
+    QUALIFICATION_REPORT = cfg.get(
+        'report', 'QUALIFICATION_REPORT', fallback='qualification_report.xlsx')
 
     qualificationReport = QualificationReport(
         f'{TARGET_DIR}/{QUALIFICATION_REPORT}',
