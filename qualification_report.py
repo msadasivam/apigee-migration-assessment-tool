@@ -259,8 +259,12 @@ class QualificationReport():
                     northBoundMTLSSheet.write(
                         row, col, sslinfo['clientAuthEnabled'], self.danger_format)
                     col += 1
-                    northBoundMTLSSheet.write(
-                        row, col, sslinfo['keyStore'], self.danger_format)
+                    if sslinfo.get('keyStore'):
+                        northBoundMTLSSheet.write(
+                            row, col, sslinfo['keyStore'], self.danger_format)
+                    elif vhost_content.get("useBuiltInFreeTrialCert") == True:
+                        northBoundMTLSSheet.write(
+                            row, col, "Free Trial Cert Used", self.danger_format)
 
                 else:
                     col += 1
@@ -467,18 +471,16 @@ class QualificationReport():
         for key, value in envConfig.items():
             vhosts = value['vhosts']
             for vhost in vhosts:
-                hostalias = vhosts[vhost]['hostAliases']
-                for alias in hostalias:
-                    if alias.endswith("apigee.net") or alias.endswith("apigee.com"):
-                        # org name
-                        col = 0
-                        cnameAnamoly.write(row, col, self.orgName)
-                        # Env name
-                        col += 1
-                        cnameAnamoly.write(row, col, key)
-                        col += 1
-                        cnameAnamoly.write(row, col, alias)
-                        row += 1
+                if vhosts[vhost]['useBuiltInFreeTrialCert']:
+                    # org name
+                    col = 0
+                    cnameAnamoly.write(row, col, self.orgName)
+                    # Env name
+                    col += 1
+                    cnameAnamoly.write(row, col, key)
+                    col += 1
+                    cnameAnamoly.write(row, col, vhosts[vhost]['name'])
+                    row += 1
 
         cnameAnamoly.autofit()
         # Info block

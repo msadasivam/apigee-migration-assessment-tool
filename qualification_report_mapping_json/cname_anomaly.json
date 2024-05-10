@@ -1,5 +1,5 @@
 {
-    "headers": ["Org Name", "Env", "Host Name"],
+    "headers": ["Org Name", "Env", "Vhost Name"],
     "info_block": {
         "text": "<b>[Anti-pattern] Free Trial Cert Usage\n\nPlease refer to this documentation for further information and fix.",
         "text_line_no_for_col_count": 2,
