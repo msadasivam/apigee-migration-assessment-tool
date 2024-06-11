@@ -25,6 +25,7 @@ import xmltodict
 import hashlib
 import configparser
 import concurrent.futures
+from time import sleep
 from base_logger import logger, EXEC_INFO
 
 
@@ -198,20 +199,35 @@ def write_csv_report(file_name, header, rows):
             writer.writerow(each_row)
 
 
-def run_parallel(func, args, workers=10):
+def run_parallel(func, args, workers=10, max_retries=3, retry_delay=1):
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        future_list = {executor.submit(func, arg) for arg in args}
+        # Initial futures (future: (arg, retry_count))
+        future_to_arg_retry = {executor.submit(func, arg): (arg, 0) for arg in args}
 
-    data = []
-    for future in concurrent.futures.as_completed(future_list):
-        try:
-            data.append(future.result())
-        except Exception as exc:
-            data.append("Exception")
-            logger.error(f'{future} generated an exception',
-                         exc_info=EXEC_INFO)
+        data = []
+        while future_to_arg_retry:
+            done, _ = concurrent.futures.wait(future_to_arg_retry, return_when=concurrent.futures.FIRST_COMPLETED)
+
+            for future in done:
+                arg, retry_count = future_to_arg_retry.pop(future)
+                try:
+                    data.append(future.result())
+                except Exception as exc:
+                    if retry_count < max_retries:
+                        retry_count += 1
+                        logger.warning(
+                            f"Task with arg {arg} failed ({retry_count}/{max_retries} retries), retrying in {retry_delay} seconds...",
+                            exc_info=True,
+                        )
+                        sleep(retry_delay)
+                        future_to_arg_retry[executor.submit(func, arg)] = (arg, retry_count)
+                    else:
+                        data.append("Exception")
+                        logger.error(
+                            f"Task with arg {arg} failed after {max_retries} retries.",
+                            exc_info=True
+                        )
     return data
-
 
 def get_proxy_entrypoint(dir):
     try:
