@@ -76,10 +76,11 @@ class ApigeeValidator():
         validation = {'apis':[],'sharedflows':[]}
         for each_api_type in ['apis','sharedflows']:
             for proxy_bundle in list_dir(export_dir):
-                each_validation=self.validate_proxy(export_dir,each_api_type,proxy_bundle)
+                each_validation = self.validate_proxy(export_dir,each_api_type,proxy_bundle)
                 validation[each_api_type].append(each_validation)
         return validation
 
+    @retry()
     def validate_proxy(self,export_dir,each_api_type,proxy_bundle):
         api_name=proxy_bundle.split(".zip")[0]
         validation_response = self.xorhybrid.create_api(
