@@ -177,7 +177,7 @@ def visualize_artifacts(cfg, export_data, report):
     exportorg = export_data['orgConfig']
     exportenv = export_data['envConfig']
     G = nx.DiGraph()
-
+    report.pop('report')
     # Process the report
     final_report = {}
     for res, val in report.items():
@@ -237,7 +237,7 @@ def visualize_artifacts(cfg, export_data, report):
             # check if importable or not
             if key == 'apis' or key == 'sharedflows':
                 if final_report.get(key):
-                    if final_report[key][name] != True:
+                    if final_report.get(key, {}).get(name, True) != True:
                         G.nodes['ORG' + seperator + name]['color'] = 'red'
                         count = 1
                         viols = ""
