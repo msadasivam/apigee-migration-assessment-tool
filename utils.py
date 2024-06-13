@@ -117,6 +117,7 @@ def parse_json(file):
 
 def write_json(file, data):
     try:
+        logger.info(f"Writing JSON to File {file}")
         with open(file, 'w') as fl:
             fl.write(json.dumps(data, indent=2))
     except FileNotFoundError:
@@ -198,6 +199,20 @@ def write_csv_report(file_name, header, rows):
         for each_row in rows:
             writer.writerow(each_row)
 
+def retry(retries=3, delay=1, backoff=2):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for attempt in range(retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == retries:
+                        raise e
+                    logger.info(f"Retrying {func.__name__} in {delay} seconds... (Attempt {attempt + 1})")
+                    sleep(delay)
+                    delay *= backoff
+        return wrapper
+    return decorator
 
 def run_parallel(func, args, workers=10, max_retries=3, retry_delay=1):
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
@@ -399,15 +414,19 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
 
     if not fault_rule:
         if Flow.get('Request'):
-            Request = ([] if Flow['Request'] is None else
-                       (
-                [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)
-                else Flow['Request']['Step']
-            )
-            )
+                if isinstance(Flow['Request'], list) and len(Flow['Request']) > 0:
+                    Flow['Request'] = Flow['Request'][0]
+                Request = ([] if Flow['Request'] is None else
+                        (
+                    [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)
+                    else Flow['Request']['Step']
+                )
+                )
         else:
             Request = []
         if Flow.get('Response'):
+            if isinstance(Flow['Response'], list) and len(Flow['Response']) > 0:
+                    Flow['Response'] = Flow['Response'][0]
             Response = ([] if Flow['Response'] is None else
                         (
                         [Flow['Response']['Step']] if isinstance(Flow['Response']['Step'], dict)
@@ -421,13 +440,15 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
         for each_flow in Response:
             policies.extend(get_all_policies_from_step(each_flow))
     else:
-
-        FaultRules = ([] if Flow is None else
-                      (
-            [Flow.get('Step')] if isinstance(Flow.get('Step'), dict)
-            else Flow.get('Step')
-        )
-        )
+        if Flow is None :
+            FaultRules = []
+        elif Flow.get('FaultRule', None) is None:
+            FaultRules = []
+        else:
+            FaultRules = (
+                [Flow.get('Step')] if isinstance(Flow['FaultRule'].get('Step'), dict)
+                else Flow['FaultRule'].get('Step')
+            )
         '''
         if Flow is None :
             FaultRules = []
@@ -456,6 +477,10 @@ def get_all_policies_from_endpoint(endpointData, endpointType):
             endpointData[endpointType]['PostFlow']
         ) if endpointData[endpointType].get('PostFlow') else []
     )
+
+    if (isinstance(endpointData[endpointType].get('Flows'), list) and
+        len(endpointData[endpointType].get('Flows')) > 0):
+        endpointData[endpointType]['Flows'] = endpointData[endpointType]['Flows'][0]
 
     Flows = (
         []

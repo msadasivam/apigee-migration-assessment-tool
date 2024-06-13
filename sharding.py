@@ -34,14 +34,14 @@ def qualification_report_info(each_proxy_dict):
         # JSONPath Enabled
         if list(value.keys())[0] == 'ExtractVariables':
             report['JsonPathEnabled'][policy] = len(
-                value['ExtractVariables']['JSONPayload']['Variable'])
+                value['ExtractVariables'].get('JSONPayload', {}).get('Variable', {}))
 
         # Quota Policy Anti Pattern
         if list(value.keys())[0] == 'Quota':
             if value['Quota']['Distributed'] == 'false' or value['Quota']['Synchronous'] == 'true':
                 report['AntiPatternQuota'][policy] = {}
-                report['AntiPatternQuota'][policy]['distributed'] = value['Quota']['Distributed']
-                report['AntiPatternQuota'][policy]['Synchronous'] = value['Quota']['Synchronous']
+                report['AntiPatternQuota'][policy]['distributed'] = value['Quota'].get('Distributed', None)
+                report['AntiPatternQuota'][policy]['Synchronous'] = value['Quota'].get('Synchronous', None)
 
         # Unsupported Policies
         Unsupported_policies = ['OAuthV1', 'ConcurrentRatelimit', 'ConnectorCallout',
@@ -131,7 +131,7 @@ def proxy_dependency_map_parallel(arg_tuple):
         each_dir = arg_tuple[0]
         proxy_dir = arg_tuple[1]
         proxyDependencyMap = arg_tuple[2]
-
+        logger.info(f"processing {each_dir}")
         each_proxy_dict = utils.read_proxy_artifacts(
             f"{proxy_dir}/{each_dir}/apiproxy",
             utils.parse_proxy_root_sharding(
@@ -139,13 +139,11 @@ def proxy_dependency_map_parallel(arg_tuple):
         )
 
         each_proxy_rel = utils.get_proxy_objects_relationships(each_proxy_dict)
-
         proxyDependencyMap[each_dir] = dict()
 
         # checking if the pe > count_provided
         cfg = utils.parse_config('backend.properties')
         proxy_endpoint_cnt = utils.get_proxy_endpoint_count(cfg)
-
         input_cfg = utils.parse_config('input.properties')
         export_dir_name = input_cfg.get('export', 'EXPORT_DIR')
         target_dir = input_cfg.get('inputs', 'TARGET_DIR')
@@ -180,7 +178,7 @@ def proxy_dependency_map_parallel(arg_tuple):
 
     except Exception as error:
         logger.error(
-            f"Error in proxy dependency map parallel function. ERROR-INFO - {error}")
+            f"Error in proxy dependency map parallel function. ERROR-INFO - {error} {each_dir}")
     finally:
         return proxyDependencyMap
 
@@ -208,6 +206,8 @@ def build_proxy_dependency(proxyDependencyMap, each_proxy_rel, each_proxy_dict, 
 
         if each_proxy_rel[proxyname].get('TargetEndpoints') is not None:
             for eachtargetendpoint in each_proxy_rel[proxyname]['TargetEndpoints']:
+                if 'HostedTarget' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():
+                    return proxyDependencyMap
                 targetservers = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(
                     'LoadBalancer')
                 if targetservers is not None:
