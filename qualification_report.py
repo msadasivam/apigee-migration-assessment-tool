@@ -322,7 +322,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            AntiPatternQuota = values['qualification']['AntiPatternQuota']
+            AntiPatternQuota = values.get('qualification', {}).get('AntiPatternQuota', {})
             for policy, value in AntiPatternQuota.items():
                 col = 0
                 antiPatternsSheet.write(row, col, self.orgName)
@@ -362,7 +362,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            CacheWithoutExpiry = values['qualification']['CacheWithoutExpiry']
+            CacheWithoutExpiry = values.get('qualification', {}).get('CacheWithoutExpiry', {})
             for policy, value in CacheWithoutExpiry.items():
                 col = 0
                 cacheWithoutExpirySheet.write(row, col, self.orgName)
@@ -436,7 +436,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            JsonPathEnabled = values['qualification']['JsonPathEnabled']
+            JsonPathEnabled = values.get('qualification', {}).get('JsonPathEnabled', {})
 
             for policy, value in JsonPathEnabled.items():
                 col = 0
@@ -506,7 +506,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            policies = values['qualification']['policies']
+            policies = values.get('qualification', {}).get('policies', {})
             for policy_name, policy in policies.items():
                 col = 0
                 unsupportedPolicesSheet.write(row, col, self.orgName)
@@ -673,7 +673,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            base_paths = values['qualification']['base_paths']
+            base_paths = values.get('qualification', {}).get('base_paths', [])
             base_paths = [
                 str(path) if path is not None else 'None' for path in base_paths]
             col = 0
