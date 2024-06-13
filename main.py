@@ -65,22 +65,31 @@ def main():
         logger.error("Pre validation checks failed. Please, check...")
         return
 
-    export_data = {}
     topology_mapping = {}
     export_data_file = f"{cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}/{cfg.get('export', 'EXPORT_FILE')}"
-
-    # Export Artifacts from Apigee OPDK/Edge (4G)
-    if resources_list == []:
-        logger.error(
-            f'Please specify --resources argument. To get the complete list of supported resources use -h with the script')
-        return
-
-    export_data = export_artifacts(cfg, resources_list)
-    write_json(export_data_file, export_data)
-
     export_data = parse_json(export_data_file)
 
-    report = validate_artifacts(cfg, export_data)
+    report_data_file = f"{cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}/report.json"
+    report = parse_json(report_data_file)
+
+    if not export_data.get('export', False):
+        export_data['export'] = False
+        topology_mapping = {}
+
+        # Export Artifacts from Apigee OPDK/Edge (4G)
+        if resources_list == []:
+            logger.error(
+                f'Please specify --resources argument. To get the complete list of supported resources use -h with the script')
+            return
+
+        export_data = export_artifacts(cfg, resources_list)
+        export_data['export'] = True
+        write_json(export_data_file, export_data)
+
+    if not report.get('report', False):
+        report = validate_artifacts(cfg, export_data)
+        report['report'] = True
+        write_json(report_data_file, report)
     # Visualize artifacts
     visualize_artifacts(cfg, export_data, report)
 
