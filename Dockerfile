@@ -15,7 +15,6 @@
 # limitations under the License
 
 FROM python:3.11-alpine
-SHELL ["/bin/sh", "-c"]
 
 # Create a directory to hold the persistent data
 WORKDIR /app
@@ -26,12 +25,12 @@ COPY requirements.txt requirements.txt
 # Install dependencies
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
-RUN apk add graphviz
+# Install additional dependencies (if needed)
+RUN apk add --no-cache graphviz
 
-# Define volumes to persist output
-VOLUME ["/app/target"]
-
-# Copy the files and folders to the persistent directory
+# Copy the rest of the application code
 COPY . .
 
-ENTRYPOINT ["/bin/sh"]
+# Set the entrypoint to execute the Python script
+ENTRYPOINT ["python3", "main.py"]
+
