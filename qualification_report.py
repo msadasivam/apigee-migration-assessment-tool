@@ -471,7 +471,7 @@ class QualificationReport():
         for key, value in envConfig.items():
             vhosts = value['vhosts']
             for vhost in vhosts:
-                if vhosts[vhost]['useBuiltInFreeTrialCert']:
+                if vhosts[vhost].get('useBuiltInFreeTrialCert', False):
                     # org name
                     col = 0
                     cnameAnamoly.write(row, col, self.orgName)
