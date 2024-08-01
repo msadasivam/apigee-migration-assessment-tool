@@ -485,13 +485,14 @@ def get_all_policies_from_endpoint(endpointData, endpointType):
     Flows = (
         []
         if endpointData[endpointType].get('Flows') is None else
-        (
+        ( [] if endpointData[endpointType].get('Flows').get('Flow') is None
+        else (
             [endpointData[endpointType]['Flows']['Flow']]
             if isinstance(
                 endpointData[endpointType]['Flows']['Flow'], dict)
             else
             endpointData[endpointType]['Flows']['Flow']
-        ))
+        )))
 
     for eachFlow in Flows:
         policies.extend(
