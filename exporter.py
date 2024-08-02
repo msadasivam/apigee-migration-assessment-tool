@@ -276,21 +276,21 @@ class ApigeeExporter():
                         f"{export_dir}/envConfig/{env}/{resource}/{res_name}.json", res_metadata)
                     
     def read_export_state(self, folder_path):
-        folder_data = {}
+        export_data = {}
         
         for item in os.listdir(folder_path):
             item_path = os.path.join(folder_path, item)
             if os.path.isdir(item_path):
-                if folder_data.get(item):
-                    folder_data[item].append(self.read_export_state(item_path))
+                if export_data.get(item):
+                    export_data[item].append(self.read_export_state(item_path))
                 else:
-                    folder_data[item] = self.read_export_state(item_path)
+                    export_data[item] = self.read_export_state(item_path)
             else:
                 with open(item_path, "r") as json_file:
                     json_content = json.load(json_file)
-                    folder_data[item[:-5]]=json_content
+                    export_data[item[:-5]]=json_content
 
-        return folder_data
+        return export_data
 
 
     def get_dependencies_data(self, dependencies):
