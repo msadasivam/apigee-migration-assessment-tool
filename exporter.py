@@ -17,6 +17,8 @@
 from classic import ApigeeClassic
 from utils import create_dir, run_parallel, write_file, write_json
 from base_logger import logger
+import os
+import json
 
 
 class ApigeeExporter():
@@ -272,6 +274,24 @@ class ApigeeExporter():
                 for res_name, res_metadata in metadata.items():
                     write_json(
                         f"{export_dir}/envConfig/{env}/{resource}/{res_name}.json", res_metadata)
+                    
+    def read_export_state(self, folder_path):
+        export_data = {}
+        
+        for item in os.listdir(folder_path):
+            item_path = os.path.join(folder_path, item)
+            if os.path.isdir(item_path):
+                if export_data.get(item):
+                    export_data[item].append(self.read_export_state(item_path))
+                else:
+                    export_data[item] = self.read_export_state(item_path)
+            else:
+                with open(item_path, "r") as json_file:
+                    json_content = json.load(json_file)
+                    export_data[item[:-5]]=json_content
+
+        return export_data
+
 
     def get_dependencies_data(self, dependencies):
 
