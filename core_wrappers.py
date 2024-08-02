@@ -25,6 +25,7 @@ from pyvis.network import Network
 import networkx as nx
 import sharding
 from base_logger import logger
+import os
 
 seperator = ' | '
 DEFAULT_GCP_ENV_TYPE = 'BASE'
@@ -106,10 +107,16 @@ def export_artifacts(cfg, resources_list):
         SOURCE_AUTH_TOKEN,
         SOURCE_AUTH_TYPE
     )
-    export_data = apigeeExport.get_export_data(resources_list, EXPORT_DIR)
-    logger.debug(export_data)
-    apigeeExport.create_export_state(EXPORT_DIR)
-    # apigeeExport.export_api_proxy_bundles(EXPORT_DIR)
+    if (os.environ.get("IGNORE_EXPORT") == "true"):
+        export_data={}
+        export_data["orgConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"orgConfig"))
+        export_data["envConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"envConfig"))
+    
+    else:
+        export_data = apigeeExport.get_export_data(resources_list, EXPORT_DIR)
+        logger.debug(export_data)
+        apigeeExport.create_export_state(EXPORT_DIR)
+        # apigeeExport.export_api_proxy_bundles(EXPORT_DIR)
 
     proxy_dependency_map = sharding.proxy_dependency_map(cfg, export_data)
     sharding_output = sharding.sharding_wrapper(
