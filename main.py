@@ -91,12 +91,14 @@ def main():
         report['report'] = True
         write_json(report_data_file, report)
     # Visualize artifacts
-    visualize_artifacts(cfg, export_data, report)
+    if not (os.environ.get("IGNORE_VIZ") == "true"):
+        visualize_artifacts(cfg, export_data, report)
 
     # get Apigee OPDK/Edge (4G) topology mapping
-    SOURCE_APIGEE_VERSION = cfg.get('inputs', 'SOURCE_APIGEE_VERSION')
-    if (SOURCE_APIGEE_VERSION == 'OPDK'):
-        topology_mapping = get_topology(cfg)
+    if not (os.environ.get("IGNORE_OPDK_TOPOLOGY") == "true"):
+        SOURCE_APIGEE_VERSION = cfg.get('inputs', 'SOURCE_APIGEE_VERSION')
+        if (SOURCE_APIGEE_VERSION == 'OPDK'):
+            topology_mapping = get_topology(cfg)
 
     # Qualification report
     qualification_report(cfg, backend_cfg, export_data, topology_mapping)
