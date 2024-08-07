@@ -18,3 +18,4 @@ sharding_output = parse_json("./qualification_report_mapping_json/target_environ
 aliases_with_private_keys = parse_json("./qualification_report_mapping_json/aliases_with_private_keys.json")
 sharded_proxies=parse_json("./qualification_report_mapping_json/sharded_proxies.json")
 org_resourcefiles=parse_json("./qualification_report_mapping_json/org_resourcefiles.json")
+validation_report=parse_json("./qualification_report_mapping_json/validation_report.json")
