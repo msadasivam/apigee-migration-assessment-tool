@@ -86,9 +86,11 @@ def main():
         export_data['export'] = True
         write_json(export_data_file, export_data)
 
-    if not report.get('report', False):
+    if not report.get('report', False) or not export_data.get('validation_report', False):
         report = validate_artifacts(cfg, export_data)
         report['report'] = True
+        export_data['validation_report'] = report
+        write_json(export_data_file, export_data)
         write_json(report_data_file, report)
     # Visualize artifacts
     if not (os.environ.get("IGNORE_VIZ") == "true"):

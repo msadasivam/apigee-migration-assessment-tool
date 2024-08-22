@@ -368,6 +368,7 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
     qualificationReport.report_alias_keycert()
     qualificationReport.sharded_proxies()
     qualificationReport.report_org_resourcefiles()
+    qualificationReport.validation_report()
     qualificationReport.qualification_report_summary()
 
     qualificationReport.reverse_sheets()

@@ -29,9 +29,11 @@ from qualification_report_mapping.header_mapping import (
     aliases_with_private_keys,
     sharded_proxies,
     org_resourcefiles,
+    validation_report,
 )
 from qualification_report_mapping.report_summary import report_summary
 from base_logger import logger
+import json
 
 
 class QualificationReport():
@@ -859,6 +861,39 @@ class QualificationReport():
         ShardedProxies.autofit()
         # Info block
         self.qualification_report_info_box(sharded_proxies, ShardedProxies)
+
+    def validation_report(self):
+        logger.info('------------------- Validation Report -----------------------')
+
+        ValidationReportSheet = self.workbook.add_worksheet(name='Validation Report')
+        self.qualification_report_heading(validation_report["headers"], ValidationReportSheet)
+
+        row = 1
+        for key, value in self.export_data['validation_report'].items():
+            col = 0
+            if key == "report":
+                continue
+            ValidationReportSheet.write(row, col, key)
+
+            for values in value:
+                col=1
+                ValidationReportSheet.write(row, col, values['name'])
+                col += 1
+                if values['importable']:
+                    ValidationReportSheet.write(row, col, values['importable'])
+                if not values['importable']:
+                    ValidationReportSheet.write(row, col, values['importable'], self.danger_format)
+                    col += 1
+                    reason_str={}
+
+                    for reason in values['reason']:
+                        if reason.get('violations'):
+                            reason_str['violations']= reason['violations']
+
+                    ValidationReportSheet.write(row, col, json.dumps(reason_str, indent=2))
+                row += 1
+        ValidationReportSheet.autofit()
+
 
     def report_org_resourcefiles(self):
 
