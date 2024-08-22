@@ -569,6 +569,10 @@ class QualificationReport():
             name='Product Limits - Org Limits')
         allowed_no_of_kvms_per_org = self.backend_cfg.get(
             'inputs', 'NO_OF_KVMS_PER_ORG')
+        allowed_no_of_apps_per_org = self.backend_cfg.get(
+            'inputs', 'NO_OF_APPS_PER_ORG')
+        allowed_no_of_apirproducts_per_org = self.backend_cfg.get(
+            'inputs', 'NO_OF_API_PRODUCTS_PER_ORG')
 
         # Headings
         self.qualification_report_heading(
@@ -590,6 +594,26 @@ class QualificationReport():
                 orgConfig['kvms']), self.danger_format)
         else:
             orgLimitsSheet.write(row, col, len(orgConfig['kvms']))
+        
+        # apps count
+        col += 1
+        if len(orgConfig['apps']) > int(allowed_no_of_apps_per_org):
+            orgLimitsSheet.write(row, col, len(
+                orgConfig['apps']), self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, len(orgConfig['apps']))
+
+        # api products count
+        col += 1
+        if len(orgConfig['apiProducts']) > int(allowed_no_of_apirproducts_per_org):
+            orgLimitsSheet.write(row, col, len(
+                orgConfig['apiProducts']), self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, len(orgConfig['apiProducts']))
+
+        # api count
+        col += 1
+        orgLimitsSheet.write(row, col, len(orgConfig['apis']))
 
         orgLimitsSheet.autofit()
         # Info block
@@ -648,6 +672,9 @@ class QualificationReport():
             # Virtual hosts
             col += 1
             envLimitsSheet.write(row, col, len(value['vhosts']))
+            # references
+            col += 1
+            envLimitsSheet.write(row, col, len(value['references']))
             row += 1
 
         envLimitsSheet.autofit()
