@@ -569,6 +569,10 @@ class QualificationReport():
             name='Product Limits - Org Limits')
         allowed_no_of_kvms_per_org = self.backend_cfg.get(
             'inputs', 'NO_OF_KVMS_PER_ORG')
+        allowed_no_of_apps_per_org = self.backend_cfg.get(
+            'inputs', 'NO_OF_APPS_PER_ORG')
+        allowed_no_of_apirproducts_per_org = self.backend_cfg.get(
+            'inputs', 'NO_OF_API_PRODUCTS_PER_ORG')
 
         # Headings
         self.qualification_report_heading(
@@ -590,6 +594,42 @@ class QualificationReport():
                 orgConfig['kvms']), self.danger_format)
         else:
             orgLimitsSheet.write(row, col, len(orgConfig['kvms']))
+
+        # encrypted kvm
+        col += 1
+        encrypted_count=0
+        for kvm, kvm_content in orgConfig['kvms'].items():
+            if kvm_content.get("encrypted"):
+                encrypted_count=encrypted_count+1
+
+        if encrypted_count > 0:
+            orgLimitsSheet.write(row, col, encrypted_count, self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, encrypted_count)
+
+        # non encrypted kvm
+        col += 1
+        orgLimitsSheet.write(row, col, len(orgConfig['kvms']) - encrypted_count)
+
+        # apps count
+        col += 1
+        if len(orgConfig['apps']) > int(allowed_no_of_apps_per_org):
+            orgLimitsSheet.write(row, col, len(
+                orgConfig['apps']), self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, len(orgConfig['apps']))
+
+        # api products count
+        col += 1
+        if len(orgConfig['apiProducts']) > int(allowed_no_of_apirproducts_per_org):
+            orgLimitsSheet.write(row, col, len(
+                orgConfig['apiProducts']), self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, len(orgConfig['apiProducts']))
+
+        # api count
+        col += 1
+        orgLimitsSheet.write(row, col, len(orgConfig['apis']))
 
         orgLimitsSheet.autofit()
         # Info block
@@ -645,9 +685,29 @@ class QualificationReport():
                     value['kvms']), self.danger_format)
             else:
                 envLimitsSheet.write(row, col, len(value['kvms']))
+
+            # encrypted kvm
+            col += 1
+            encrypted_count=0
+            for kvm, kvm_content in value['kvms'].items():
+                if kvm_content.get("encrypted"):
+                    encrypted_count=encrypted_count+1
+
+            if encrypted_count > 0:
+                envLimitsSheet.write(row, col, encrypted_count, self.danger_format)
+            else:
+                envLimitsSheet.write(row, col, encrypted_count)
+
+            # non encrypted kvm
+            col += 1
+            envLimitsSheet.write(row, col, len(value['kvms']) - encrypted_count)
+
             # Virtual hosts
             col += 1
             envLimitsSheet.write(row, col, len(value['vhosts']))
+            # references
+            col += 1
+            envLimitsSheet.write(row, col, len(value['references']))
             row += 1
 
         envLimitsSheet.autofit()

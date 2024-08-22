@@ -1,5 +1,5 @@
 {
-    "headers": ["Organization", "Environment", "Target Servers", "caches", "certs", "kvms", "Vhosts"],
+    "headers": ["Organization", "Environment", "Target Servers", "caches", "certs", "kvms", "Encrypted KVM Count", "Non Encrypted KVM Count", "Vhosts", "References"],
     "info_block": {
         "text": "<b>[Product Updates] Limits per Environment\n\nApigee X enforces / will start to enforce limits per environment level.\n\n<bu>Fix:\nReduce the number of these items based on the maximum allowable number per environment.",
         "text_line_no_for_col_count": 2,
