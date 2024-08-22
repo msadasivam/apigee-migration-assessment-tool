@@ -594,7 +594,23 @@ class QualificationReport():
                 orgConfig['kvms']), self.danger_format)
         else:
             orgLimitsSheet.write(row, col, len(orgConfig['kvms']))
-        
+
+        # encrypted kvm
+        col += 1
+        encrypted_count=0
+        for kvm, kvm_content in orgConfig['kvms'].items():
+            if kvm_content.get("encrypted"):
+                encrypted_count=encrypted_count+1
+
+        if encrypted_count > 0:
+            orgLimitsSheet.write(row, col, encrypted_count, self.danger_format)
+        else:
+            orgLimitsSheet.write(row, col, encrypted_count)
+
+        # non encrypted kvm
+        col += 1
+        orgLimitsSheet.write(row, col, len(orgConfig['kvms']) - encrypted_count)
+
         # apps count
         col += 1
         if len(orgConfig['apps']) > int(allowed_no_of_apps_per_org):
@@ -669,6 +685,23 @@ class QualificationReport():
                     value['kvms']), self.danger_format)
             else:
                 envLimitsSheet.write(row, col, len(value['kvms']))
+
+            # encrypted kvm
+            col += 1
+            encrypted_count=0
+            for kvm, kvm_content in value['kvms'].items():
+                if kvm_content.get("encrypted"):
+                    encrypted_count=encrypted_count+1
+
+            if encrypted_count > 0:
+                envLimitsSheet.write(row, col, encrypted_count, self.danger_format)
+            else:
+                envLimitsSheet.write(row, col, encrypted_count)
+
+            # non encrypted kvm
+            col += 1
+            envLimitsSheet.write(row, col, len(value['kvms']) - encrypted_count)
+
             # Virtual hosts
             col += 1
             envLimitsSheet.write(row, col, len(value['vhosts']))

@@ -1,5 +1,5 @@
 {
-    "headers": ["Organization", "Developer Count", "KVM Count", "Apps Count", "Api products Count", "Apis Count"],
+    "headers": ["Organization", "Developer Count", "KVM Count", "Encrypted KVM Count", "Non Encrypted KVM Count", "Apps Count", "Api products Count", "Apis Count"],
     "info_block": {
         "text": "<b>[Anti-pattern] Resources Count per Org\n\nApigee X enforces a maximum of 100 KVMs, 1 Million apps, and 5000 api products per organization.\n\n<iu>Fix:\nThese resources must be re-organized and reduce to meet this limit.",
         "text_line_no_for_col_count": 2,
