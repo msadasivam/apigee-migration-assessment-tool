@@ -416,22 +416,22 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
         if Flow.get('Request'):
                 if isinstance(Flow['Request'], list) and len(Flow['Request']) > 0:
                     Flow['Request'] = Flow['Request'][0]
-                Request = ([] if Flow['Request'] is None else
-                        (
+                Request = ([] if Flow['Request'] is None else (
+                            [] if Flow['Request'].get('Step') is None else (
                     [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)
                     else Flow['Request']['Step']
-                )
+                ))
                 )
         else:
             Request = []
         if Flow.get('Response'):
             if isinstance(Flow['Response'], list) and len(Flow['Response']) > 0:
                     Flow['Response'] = Flow['Response'][0]
-            Response = ([] if Flow['Response'] is None else
-                        (
+            Response = ([] if Flow['Response'] is None else (
+                            [] if Flow['Response'].get('Step') is None else (
                         [Flow['Response']['Step']] if isinstance(Flow['Response']['Step'], dict)
                         else Flow['Response']['Step']
-                        )
+                        ))
                         )
         else:
             Response = []

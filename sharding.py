@@ -38,7 +38,7 @@ def qualification_report_info(each_proxy_dict):
 
         # Quota Policy Anti Pattern
         if list(value.keys())[0] == 'Quota':
-            if value['Quota']['Distributed'] == 'false' or value['Quota']['Synchronous'] == 'true':
+            if value['Quota'].get('Distributed', 'false') == 'false' or value['Quota'].get('Synchronous', 'false') == 'true':
                 report['AntiPatternQuota'][policy] = {}
                 report['AntiPatternQuota'][policy]['distributed'] = value['Quota'].get('Distributed', None)
                 report['AntiPatternQuota'][policy]['Synchronous'] = value['Quota'].get('Synchronous', None)
@@ -207,6 +207,8 @@ def build_proxy_dependency(proxyDependencyMap, each_proxy_rel, each_proxy_dict, 
         if each_proxy_rel[proxyname].get('TargetEndpoints') is not None:
             for eachtargetendpoint in each_proxy_rel[proxyname]['TargetEndpoints']:
                 if 'HostedTarget' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():
+                    return proxyDependencyMap
+                if 'LocalTargetConnection' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():
                     return proxyDependencyMap
                 targetservers = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(
                     'LoadBalancer')

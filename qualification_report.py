@@ -399,20 +399,35 @@ class QualificationReport():
 
         apps = orgConfig['apps']
         for app, value in apps.items():
-            products = value['credentials'][0]['apiProducts']
-            if len(products) == 0:
+            credentials = value.get('credentials',[])
+            if len(credentials) == 0:
                 col = 0
                 appsWithoutAPIProductsSheet.write(row, col, self.orgName)
                 # app name
                 col += 1
-                appsWithoutAPIProductsSheet.write(row, col, value['name'])
+                appsWithoutAPIProductsSheet.write(row, col, value.get('name','Unknown App Name'))
                 # id
                 col += 1
                 appsWithoutAPIProductsSheet.write(row, col, app)
                 # status
                 col += 1
                 appsWithoutAPIProductsSheet.write(
-                    row, col, value['credentials'][0]['status'])
+                    row, col, 'No Credentials Found')
+            else:
+                products = value['credentials'][0]['apiProducts']
+                if len(products) == 0:
+                    col = 0
+                    appsWithoutAPIProductsSheet.write(row, col, self.orgName)
+                    # app name
+                    col += 1
+                    appsWithoutAPIProductsSheet.write(row, col, value['name'])
+                    # id
+                    col += 1
+                    appsWithoutAPIProductsSheet.write(row, col, app)
+                    # status
+                    col += 1
+                    appsWithoutAPIProductsSheet.write(
+                        row, col, value['credentials'][0]['status'])
 
         appsWithoutAPIProductsSheet.autofit()
         # Info block
