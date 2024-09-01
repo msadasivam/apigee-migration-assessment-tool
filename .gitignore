@@ -198,3 +198,7 @@ credentials.json
 *qualification_report.xlsx
 
 unzip
+
+input.properties.*
+dev
+target*

@@ -171,7 +171,7 @@ class ApigeeExporter():
     def export_api_metadata(self, api_types):
         for each_api_type in api_types:
             logger.info(f"--Exporting {each_api_type} metadata--")
-            apis = self.opdk.list_apis(each_api_type)
+            apis = self.opdk.list_org_objects(each_api_type)
 
             for each_api in apis:
                 logger.info(f"Exporting {each_api_type} {each_api}")
@@ -194,6 +194,7 @@ class ApigeeExporter():
 
     def export_api_proxy_bundles(self, export_dir, api_types):
         for each_api_type in api_types:
+            logger.info(f"--Exporting {each_api_type} proxy bundle--")
             # apis=self.opdk.list_apis(each_api_type)
             apis = self.export_data['orgConfig'][each_api_type].keys()
             args = (

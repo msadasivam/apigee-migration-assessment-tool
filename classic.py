@@ -25,6 +25,7 @@ class ApigeeClassic():
         self.token = token
         self.auth_type = auth_type
         self.client = RestClient(self.auth_type, token)
+        self.requires_pagination = ['apis', 'apps', 'developers', 'apiproducts']
 
     def get_org(self):
         url = f"{self.baseurl}/organizations/{self.org}"
@@ -37,8 +38,21 @@ class ApigeeClassic():
         return envs
 
     def list_org_objects(self, org_object):
-        url = f"{self.baseurl}/organizations/{self.org}/{org_object}"
-        org_objects = self.client.get(url)
+        org_objects = []
+        object_count = 100
+        if org_object in self.requires_pagination:
+            start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}"
+            each_org_object = self.client.get(start_url)
+            org_objects.extend(each_org_object)
+            while len(each_org_object) > 0:
+                startKey = each_org_object[-1]
+                url = f"{start_url}&startKey={startKey}"
+                each_org_object = self.client.get(url)
+                each_org_object.remove(startKey)
+                org_objects.extend(each_org_object)
+        else:
+            url = f"{self.baseurl}/organizations/{self.org}/{org_object}"
+            org_objects = self.client.get(url)
         return org_objects
 
     def get_org_object(self, org_object, org_object_name):
