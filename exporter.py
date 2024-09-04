@@ -152,13 +152,17 @@ class ApigeeExporter():
                     self.export_data['orgConfig'][self.org_object_types['org_keyvaluemaps']
                                                   ][each_org_object] = obj_data
             else:
-                for each_org_object in org_objects:
-                    logger.info(
-                        f"Exporting {each_org_object_type} {each_org_object}")
-                    obj_data = self.opdk.get_org_object(
-                        each_org_object_type, each_org_object)
+                if each_org_object_type in self.opdk.can_expand:
                     self.export_data['orgConfig'][self.org_object_types[each_org_object_type]
-                                                  ][each_org_object] = obj_data
+                                                    ] = self.opdk.list_org_objects_expand(each_org_object_type)
+                else:
+                    for each_org_object in org_objects:
+                        logger.info(
+                            f"Exporting {each_org_object_type} {each_org_object}")
+                        obj_data = self.opdk.get_org_object(
+                            each_org_object_type, each_org_object)
+                        self.export_data['orgConfig'][self.org_object_types[each_org_object_type]
+                                                    ][each_org_object] = obj_data
 
     def developers_list(self):
         developers = self.opdk.list_org_objects('developers')

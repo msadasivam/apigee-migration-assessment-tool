@@ -26,6 +26,11 @@ class ApigeeClassic():
         self.auth_type = auth_type
         self.client = RestClient(self.auth_type, token)
         self.requires_pagination = ['apis', 'apps', 'developers', 'apiproducts']
+        self.can_expand = {
+            'apps': {'expand_key': 'app', 'id': 'appId'},
+            'developers': {'expand_key': 'developer', 'id': 'email'},
+            'apiproducts': {'expand_key': 'apiProduct', 'id': 'name'}
+        }
 
     def get_org(self):
         url = f"{self.baseurl}/organizations/{self.org}"
@@ -53,6 +58,26 @@ class ApigeeClassic():
         else:
             url = f"{self.baseurl}/organizations/{self.org}/{org_object}"
             org_objects = self.client.get(url)
+        return org_objects
+
+    def list_org_objects_expand(self, org_object):
+        org_objects = {}
+        object_count = 100
+        expand_key = self.can_expand.get(org_object).get('expand_key')
+        id_key = self.can_expand.get(org_object).get('id')
+        start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}&expand=true"
+        each_org_object = self.client.get(start_url)
+        each_org_object = each_org_object.get(expand_key,{})
+        for each_item in each_org_object:
+            org_objects[each_item[id_key]] = each_item
+        while len(each_org_object) > 0:
+            startKey = each_org_object[-1].get(id_key)
+            url = f"{start_url}&startKey={startKey}"
+            each_org_object = self.client.get(url)
+            each_org_object = each_org_object.get(expand_key,{})
+            each_org_object.pop(0)
+            for each_item in each_org_object:
+                org_objects[each_item[id_key]] = each_item
         return org_objects
 
     def get_org_object(self, org_object, org_object_name):
