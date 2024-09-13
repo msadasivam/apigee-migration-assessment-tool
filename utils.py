@@ -390,11 +390,14 @@ def read_proxy_artifacts(dir, entrypoint):
 
 def get_target_endpoints(ProxyEndpointData):
     target_endpoints = []
-    routes = (
-        [ProxyEndpointData['RouteRule']]
-        if isinstance(ProxyEndpointData['RouteRule'], dict)
-        else ProxyEndpointData['RouteRule']
-    )
+    routes = ProxyEndpointData.get('RouteRule',[])
+    if len(routes) > 0:
+        routes = (
+            [ProxyEndpointData['RouteRule']]
+            if isinstance(ProxyEndpointData['RouteRule'], dict)
+            else ProxyEndpointData['RouteRule']
+        )
+
     for eachRoute in routes:
         if 'TargetEndpoint' in eachRoute:
             target_endpoints.append(eachRoute['TargetEndpoint'])
