@@ -19,12 +19,12 @@ from requests.utils import quote as urlencode
 
 
 class ApigeeClassic():
-    def __init__(self, baseurl, org, token, auth_type):
+    def __init__(self, baseurl, org, token, auth_type, ssl_verify):
         self.baseurl = baseurl
         self.org = org
         self.token = token
         self.auth_type = auth_type
-        self.client = RestClient(self.auth_type, token)
+        self.client = RestClient(self.auth_type, token, ssl_verify)
         self.requires_pagination = ['apis', 'apps', 'developers', 'apiproducts']
         self.can_expand = {
             'apps': {'expand_key': 'app', 'id': 'appId'},

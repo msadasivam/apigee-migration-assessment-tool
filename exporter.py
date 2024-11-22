@@ -23,12 +23,12 @@ import json
 
 class ApigeeExporter():
 
-    def __init__(self, baseurl, org, token, auth_type):
+    def __init__(self, baseurl, org, token, auth_type, ssl_verify):
         self.baseurl = baseurl
         self.org = org
         self.token = token
         self.auth_type = auth_type
-        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type)
+        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type,ssl_verify=ssl_verify)
         self.env_object_types = {
             'targetservers': 'targetServers',
             'keyvaluemaps': 'kvms',

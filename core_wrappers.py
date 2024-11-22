@@ -67,9 +67,12 @@ def pre_validation_checks(cfg):
     SOURCE_ORG = cfg.get('inputs', 'SOURCE_ORG')
     SOURCE_AUTH_TOKEN = get_source_auth_token()
     SOURCE_AUTH_TYPE = cfg.get('inputs', 'SOURCE_AUTH_TYPE')
+    try:
+        SSL_VERIFICATION = cfg.getboolean('inputs', 'SSL_VERIFICATION')
+    except ValueError:
+        SSL_VERIFICATION = True
     opdk = ApigeeClassic(SOURCE_URL, SOURCE_ORG,
-                         SOURCE_AUTH_TOKEN, SOURCE_AUTH_TYPE)
-
+                         SOURCE_AUTH_TOKEN, SOURCE_AUTH_TYPE,SSL_VERIFICATION)
     if (not opdk.get_org()):
         logger.error(f"No source organizations found")
         return False
@@ -96,6 +99,10 @@ def export_artifacts(cfg, resources_list):
     SOURCE_AUTH_TOKEN = get_source_auth_token()
     SOURCE_AUTH_TYPE = cfg.get('inputs', 'SOURCE_AUTH_TYPE')
     TARGET_DIR = cfg.get('inputs', 'TARGET_DIR')
+    try:
+        SSL_VERIFICATION = cfg.getboolean('inputs', 'SSL_VERIFICATION')
+    except ValueError:
+        SSL_VERIFICATION = True
     EXPORT_DIR = f"{TARGET_DIR}/{cfg.get('export','EXPORT_DIR')}"
     API_EXPORT_DIR = f"{EXPORT_DIR}/apis"
     SF_EXPORT_DIR = f"{EXPORT_DIR}/sharedflows"
@@ -105,7 +112,8 @@ def export_artifacts(cfg, resources_list):
         SOURCE_URL,
         SOURCE_ORG,
         SOURCE_AUTH_TOKEN,
-        SOURCE_AUTH_TYPE
+        SOURCE_AUTH_TYPE,
+        SSL_VERIFICATION
     )
     if (os.environ.get("IGNORE_EXPORT") == "true"):
         export_data={}

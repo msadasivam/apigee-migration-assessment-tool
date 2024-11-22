@@ -17,6 +17,10 @@
 import json
 import requests
 from base_logger import logger, EXEC_INFO
+from urllib3.exceptions import InsecureRequestWarning
+
+# Suppress the warnings from urllib3
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 UNKNOWN_ERROR = 'internal.unknown'
 
@@ -35,8 +39,10 @@ class RestClient(object):
 
     """Provides simple methods for handling all RESTful api endpoints. """
 
-    def __init__(self, auth_type, token):
+    def __init__(self, auth_type, token, ssl_verify=True):
         self._ALLOWED_AUTH_TYPES = ['basic', 'oauth']
+        self.session = requests.Session()
+        self.session.verify = ssl_verify
         if auth_type not in self._ALLOWED_AUTH_TYPES:
             raise ValueError(
                 f'Unknown Auth type , Allowed types are {" ,".join(self._ALLOWED_AUTH_TYPES)}')
@@ -48,20 +54,20 @@ class RestClient(object):
 
     def get(self, url, params=None):
         headers = self.base_headers.copy()
-        response = requests.get(url, params=params, headers=headers)
+        response = self.session.get(url, params=params, headers=headers)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
     def file_get(self, url, params=None):
         headers = self.base_headers.copy()
-        response = requests.get(
+        response = self.session.get(
             url, params=params, headers=headers, stream=True)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
     def post(self, url, data=None):
         headers = self.base_headers.copy()
-        response = requests.post(
+        response = self.session.post(
             url, data=json.dumps(data or {}), headers=headers)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
@@ -69,28 +75,28 @@ class RestClient(object):
     def file_post(self, url, params=None, data=None, files=None):
         headers = self.base_headers.copy()
         headers['Content-Type'] = 'application/octet-stream'
-        response = requests.post(
+        response = self.session.post(
             url, data=data, files=files, headers=headers, params=params)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
     def patch(self, url, data=None):
         headers = self.base_headers.copy()
-        response = requests.patch(
+        response = self.session.patch(
             url, data=json.dumps(data or {}), headers=headers)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
     def put(self, url, data=None):
         headers = self.base_headers.copy()
-        response = requests.put(
+        response = self.session.put(
             url, data=json.dumps(data or {}), headers=headers)
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
     def delete(self, url, params=None):
         headers = self.base_headers.copy()
-        response = requests.delete(url, headers=headers, params=params or {})
+        response = self.session.delete(url, headers=headers, params=params or {})
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
