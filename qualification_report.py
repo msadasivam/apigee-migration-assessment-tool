@@ -707,7 +707,7 @@ class QualificationReport():
             col += 1
             encrypted_count=0
             for kvm, kvm_content in value['kvms'].items():
-                if kvm_content.get("encrypted"):
+                if len(kvm) != 0 and kvm_content.get("encrypted"):
                     encrypted_count=encrypted_count+1
 
             if encrypted_count > 0:

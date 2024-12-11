@@ -48,9 +48,10 @@ def is_token_valid(token):
     url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"
     r = requests.get(url)
     if r.status_code == 200:
-        if 'email' not in r.json():
-            r.json()['email'] = ''
-        logger.info(f"Token Validated for user {r.json()['email']}")
+        response_json = r.json()
+        if 'email' not in response_json:
+            response_json['email'] = ''
+        logger.info(f"Token Validated for user {response_json['email']}")
         return True
     return False
 
