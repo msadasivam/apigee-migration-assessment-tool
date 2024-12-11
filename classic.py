@@ -51,8 +51,8 @@ class ApigeeClassic():
             org_objects.extend(each_org_object)
             while len(each_org_object) > 0:
                 startKey = each_org_object[-1]
-                url = f"{start_url}&startKey={startKey}"
-                each_org_object = self.client.get(url)
+                params = {'startKey': startKey}
+                each_org_object = self.client.get(start_url, params=params)
                 each_org_object.remove(startKey)
                 org_objects.extend(each_org_object)
         else:
@@ -72,8 +72,8 @@ class ApigeeClassic():
             org_objects[each_item[id_key]] = each_item
         while len(each_org_object) > 0:
             startKey = each_org_object[-1].get(id_key)
-            url = f"{start_url}&startKey={startKey}"
-            each_org_object = self.client.get(url)
+            params = {'startKey': startKey}
+            each_org_object = self.client.get(start_url, params=params)
             each_org_object = each_org_object.get(expand_key,{})
             each_org_object.pop(0)
             for each_item in each_org_object:
