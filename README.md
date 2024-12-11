@@ -62,8 +62,8 @@ SOURCE_APIGEE_VERSION=xxxx               # APIGEE Flavor OPDK/SAAS/X/HYBRID
 GCP_PROJECT_ID=xx-xx-xx                  # Apigee X/Hybrd Organiziation ID
 API_URL=https://xxx/docs                 # Apigee API url
 GCP_ENV_TYPE=BASE | INTERMEDIATE | COMPREHENSIVE    # Apigee X/Hybrid desired environment type - [See docs](https://cloud.google.com/apigee/docs/api-platform/fundamentals/environments-overview#environment-types)
-TARGET_DIR=target
-
+TARGET_DIR=target                        # Name of directory to export apigee objects from SOURCE_URL
+SSL_VERIFICATION=true                    # Set to false , to ingnore SSL verification
 
 [export]
 EXPORT_DIR=export
