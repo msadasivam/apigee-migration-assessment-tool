@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ from nextgen import ApigeeNewGen
 from validator import ApigeeValidator
 from qualification_report import QualificationReport
 from topology import ApigeeTopology
-from utils import *
+from utils import (
+    create_dir, get_source_auth_token,
+    get_access_token, write_csv_report)
+import json
 from pyvis.network import Network
 import networkx as nx
 import sharding
@@ -37,9 +40,14 @@ def pre_validation_checks(cfg):
 
     # validate input.properties
     required_keys = {
-        "inputs": ["SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE", "SOURCE_UI_URL", "SOURCE_APIGEE_VERSION", "GCP_PROJECT_ID", "GCP_ENV_TYPE", "API_URL", "TARGET_DIR"],
+        "inputs": [
+            "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
+            "SOURCE_UI_URL", "SOURCE_APIGEE_VERSION",
+            "GCP_PROJECT_ID", "GCP_ENV_TYPE",
+            "API_URL", "TARGET_DIR"],
         "export": ["EXPORT_DIR", "EXPORT_FILE"],
-        "topology": ["TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
+        "topology": [
+            "TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
         "validate": ["CSV_REPORT"]
     }
     missing_keys = []
@@ -72,9 +80,9 @@ def pre_validation_checks(cfg):
     except ValueError:
         SSL_VERIFICATION = True
     opdk = ApigeeClassic(SOURCE_URL, SOURCE_ORG,
-                         SOURCE_AUTH_TOKEN, SOURCE_AUTH_TYPE,SSL_VERIFICATION)
+                         SOURCE_AUTH_TOKEN, SOURCE_AUTH_TYPE, SSL_VERIFICATION)
     if (not opdk.get_org()):
-        logger.error(f"No source organizations found")
+        logger.error("No source organizations found")
         return False
 
     # check for target org
@@ -87,7 +95,7 @@ def pre_validation_checks(cfg):
     org_obj = xorhybrid.get_org()
     if (org_obj.get("error")):
         logger.error(
-            f"No target organizations found. ERROR-INFO - {org_obj['error'].get('message','No error Info found.')}")
+            f"No target organizations found. ERROR-INFO - {org_obj['error'].get('message','No error Info found.')}")  # noqa
         return False
     return True
 
@@ -103,7 +111,7 @@ def export_artifacts(cfg, resources_list):
         SSL_VERIFICATION = cfg.getboolean('inputs', 'SSL_VERIFICATION')
     except ValueError:
         SSL_VERIFICATION = True
-    EXPORT_DIR = f"{TARGET_DIR}/{cfg.get('export','EXPORT_DIR')}"
+    EXPORT_DIR = f"{TARGET_DIR}/{cfg.get('export', 'EXPORT_DIR')}"
     API_EXPORT_DIR = f"{EXPORT_DIR}/apis"
     SF_EXPORT_DIR = f"{EXPORT_DIR}/sharedflows"
     create_dir(API_EXPORT_DIR)
@@ -116,10 +124,9 @@ def export_artifacts(cfg, resources_list):
         SSL_VERIFICATION
     )
     if (os.environ.get("IGNORE_EXPORT") == "true"):
-        export_data={}
-        export_data["orgConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"orgConfig"))
-        export_data["envConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"envConfig"))
-    
+        export_data = {}
+        export_data["orgConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"orgConfig"))  # noqa
+        export_data["envConfig"] = apigeeExport.read_export_state(os.path.join(EXPORT_DIR,"envConfig"))  # noqa
     else:
         export_data = apigeeExport.get_export_data(resources_list, EXPORT_DIR)
         logger.debug(export_data)
@@ -140,7 +147,7 @@ def validate_artifacts(cfg, export_data):
     logger.info('------------------- VALIDATE -----------------------')
     report = {}
     TARGET_DIR = cfg.get('inputs', 'TARGET_DIR')
-    EXPORT_DIR = f"{TARGET_DIR}/{cfg.get('export','EXPORT_DIR')}"
+    EXPORT_DIR = f"{TARGET_DIR}/{cfg.get('export', 'EXPORT_DIR')}"
     GCP_PROJECT_ID = cfg.get('inputs', 'GCP_PROJECT_ID')
     GCP_ENV_TYPE = cfg.get('inputs', 'GCP_ENV_TYPE',
                            fallback=DEFAULT_GCP_ENV_TYPE)
@@ -154,11 +161,11 @@ def validate_artifacts(cfg, export_data):
         resourcefiles = export_data['envConfig'][env]['resourcefiles']
         flowhooks = export_data['envConfig'][env]['flowhooks']
         report[env + seperator +
-               'targetServers'] = apigeeValidator.validate_env_targetservers(targetServers)
+               'targetServers'] = apigeeValidator.validate_env_targetservers(targetServers)  # noqa
         report[env + seperator +
-               'resourcefiles'] = apigeeValidator.validate_env_resourcefiles(resourcefiles)
+               'resourcefiles'] = apigeeValidator.validate_env_resourcefiles(resourcefiles)  # noqa
         report[env + seperator +
-               'flowhooks'] = apigeeValidator.validate_env_flowhooks(env, flowhooks)
+               'flowhooks'] = apigeeValidator.validate_env_flowhooks(env, flowhooks)  # noqa
 
     validation = apigeeValidator.validate_proxy_bundles(f"{EXPORT_DIR}/apis")
     # Todo
@@ -173,7 +180,7 @@ def validate_artifacts(cfg, export_data):
                     each_type,
                     each_item.get('name', None),
                     each_item.get('importable', None),
-                    "" if len(each_item.get('reason', [])) == 0 else json.dumps(
+                    "" if len(each_item.get('reason', [])) == 0 else json.dumps(      # noqa
                         each_item.get('reason', []), indent=2)
                 ]
             )
@@ -207,7 +214,7 @@ def visualize_artifacts(cfg, export_data, report):
     org_url = SOURCE_UI_URL + SOURCE_ORG
     G.add_node('ORG' + seperator + SOURCE_ORG, size=30, color='pink')
     G.nodes['ORG' + seperator +
-            SOURCE_ORG]['title'] = f'<a href={org_url} target="_blank">Organization - {SOURCE_ORG}</a>'
+            SOURCE_ORG]['title'] = f'<a href={org_url} target="_blank">Organization - {SOURCE_ORG}</a>'  # noqa
     for key, value in exportorg.items():
         G.add_edge('ORG' + seperator + key.upper(),
                    'ORG' + seperator + SOURCE_ORG)
@@ -217,15 +224,15 @@ def visualize_artifacts(cfg, export_data, report):
         if key == 'apiProducts':
             res_url = SOURCE_UI_URL + SOURCE_ORG + '/products'
             G.nodes['ORG' + seperator + key.upper()
-                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'
+                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'  # noqa
         elif key == 'kvms':
             res_url = API_URL + '/key-value-maps/1/overview'
             G.nodes['ORG' + seperator + key.upper()
-                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'
+                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'  # noqa
         else:
             res_url = SOURCE_UI_URL + SOURCE_ORG + '/' + key
             G.nodes['ORG' + seperator + key.upper()
-                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'
+                    ]['title'] = f'<a href={res_url} target="_blank">Org level {key}</a>'  # noqa
 
         # check threshold for resources
         threshold = 100
@@ -252,11 +259,11 @@ def visualize_artifacts(cfg, export_data, report):
             # check if importable or not
             if key == 'apis' or key == 'sharedflows':
                 if final_report.get(key):
-                    if final_report.get(key, {}).get(name, True) != True:
+                    if final_report.get(key, {}).get(name, True) is not True:
                         G.nodes['ORG' + seperator + name]['color'] = 'red'
                         count = 1
                         viols = ""
-                        for violation in final_report[key][name][0]['violations']:
+                        for violation in final_report[key][name][0]['violations']:  # noqa
                             viols += str(count) + ". "
                             viols += violation['description'] + " "
                             count = count+1
@@ -268,7 +275,7 @@ def visualize_artifacts(cfg, export_data, report):
     G.nodes['ORG' + seperator + 'ENVs']['size'] = 20
     env_url = API_URL + '/environments/1/overview'
     G.nodes['ORG' + seperator +
-            'ENVs']['title'] = f'<a href={env_url} target="_blank">Environments</a>'
+            'ENVs']['title'] = f'<a href={env_url} target="_blank">Environments</a>'  # noqa
 
     for env, value in exportenv.items():
         G.add_edge(env, 'ORG | ENVs')
@@ -281,35 +288,36 @@ def visualize_artifacts(cfg, export_data, report):
             if resource == 'resourcefiles':
                 res_url = API_URL + '/resource-files/1/overview'
                 G.nodes[env + seperator + resource.upper(
-                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'
+                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'  # noqa
             elif resource == 'kvms':
                 res_url = base_url + 'key-value-maps'
                 G.nodes[env + seperator + resource.upper(
-                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'
+                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'  # noqa
             elif resource == 'vhosts':
                 res_url = base_url + 'virtual-hosts'
                 G.nodes[env + seperator + resource.upper(
-                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'
+                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'  # noqa
             elif resource == 'targetServers':
                 res_url = base_url + 'target-servers'
                 G.nodes[env + seperator + resource.upper(
-                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'
+                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'  # noqa
             else:
                 res_url = base_url + resource
                 G.nodes[env + seperator + resource.upper(
-                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'
+                )]['title'] = f'<a href={res_url} target="_blank">Env {env} level {resource}</a>'  # noqa
 
             # check threshold for env level resources
             threshold = 100
             if len(val) > threshold:
                 G.add_edge('More than ' + str(threshold) + ' ' + resource +
-                           ' in env ' + env, env + seperator + resource.upper())
+                           ' in env ' + env, env + seperator
+                           + resource.upper())
                 G.nodes['More than ' + str(threshold) + ' ' +
                         resource + ' in env ' + env]['color'] = 'black'
                 G.nodes['More than ' + str(threshold) + ' ' +
                         resource + ' in env ' + env]['size'] = 20
                 G.nodes['More than ' + str(threshold) + ' ' + resource + ' in env ' +
-                        env]['title'] = 'Total - ' + str(len(val)) + ' ' + resource
+                        env]['title'] = 'Total - ' + str(len(val)) + ' ' + resource  # noqa
                 continue
 
             for name, info in val.items():
@@ -322,7 +330,7 @@ def visualize_artifacts(cfg, export_data, report):
                 if resource == 'targetServers' or resource == 'resourcefiles':
                     if final_report[env + seperator + resource][name] != True:
                         G.nodes[env + seperator + name]['color'] = 'red'
-                        G.nodes[env + seperator + name]['title'] = '<b>Reason</b> : ' + \
+                        G.nodes[env + seperator + name]['title'] = '<b>Reason</b> : ' + \  # noqa
                             final_report[env + seperator +
                                          resource][name][0]['error_msg']['message']
 

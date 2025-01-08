@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import os
 import utils
 import unifier
-import os
 import zipfile
 from base_logger import logger
 
@@ -34,30 +33,33 @@ def qualification_report_info(each_proxy_dict):
         # JSONPath Enabled
         if list(value.keys())[0] == 'ExtractVariables':
             report['JsonPathEnabled'][policy] = len(
-                value['ExtractVariables'].get('JSONPayload', {}).get('Variable', {}))
+                value['ExtractVariables'].get('JSONPayload', {}).get('Variable', {}))  # noqa
 
         # Quota Policy Anti Pattern
         if list(value.keys())[0] == 'Quota':
-            if value['Quota'].get('Distributed', 'false') == 'false' or value['Quota'].get('Synchronous', 'false') == 'true':
+            if (value['Quota'].get('Distributed', 'false') == 'false' or
+                    value['Quota'].get('Synchronous', 'false') == 'true'):
                 report['AntiPatternQuota'][policy] = {}
-                report['AntiPatternQuota'][policy]['distributed'] = value['Quota'].get('Distributed', None)
-                report['AntiPatternQuota'][policy]['Synchronous'] = value['Quota'].get('Synchronous', None)
+                report['AntiPatternQuota'][policy]['distributed'] = value['Quota'].get('Distributed', None)  # noqa
+                report['AntiPatternQuota'][policy]['Synchronous'] = value['Quota'].get('Synchronous', None)  # noqa
 
         # Unsupported Policies
-        Unsupported_policies = ['OAuthV1', 'ConcurrentRatelimit', 'ConnectorCallout',
-                                'StatisticsCollector', 'DeleteOAuthV1Info', 'GetOAuthV1Info', 'Ldap']
+        Unsupported_policies = ['OAuthV1', 'ConcurrentRatelimit',
+                                'ConnectorCallout', 'StatisticsCollector',
+                                'DeleteOAuthV1Info', 'GetOAuthV1Info',
+                                'Ldap']
         if list(value.keys())[0] in Unsupported_policies:
             report['policies'][policy] = list(value.keys())[0]
 
         # Cache without expiry
-        if list(value.keys())[0] == 'PopulateCache' or list(value.keys())[0] == 'ResponseCache':
+        if list(value.keys())[0] == 'PopulateCache' or list(value.keys())[0] == 'ResponseCache':  # noqa
             if not value[list(value.keys())[0]].get('ExpirySettings'):
                 report['CacheWithoutExpiry'][policy] = list(value.keys())[0]
 
     # api with multiple basepaths
     base_paths = []
-    for proxy_endpoint, value in each_proxy_dict['ProxyEndpoints'].items():
-        basepath = value['ProxyEndpoint']['HTTPProxyConnection']['BasePath']
+    for proxy_endpoint, value in each_proxy_dict['ProxyEndpoints'].items():  # noqa
+        basepath = value['ProxyEndpoint']['HTTPProxyConnection']['BasePath']  # noqa
         base_paths.append(basepath)
     report['base_paths'] = base_paths
 
@@ -70,7 +72,7 @@ def unzip_all_bundles(input_cfg):
     target_dir = input_cfg.get('inputs', 'TARGET_DIR')
 
     backend_cfg = utils.parse_config('backend.properties')
-    source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')
+    source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')  # noqa
 
     extension = ".zip"
     current_dir = os.getcwd()
@@ -106,10 +108,10 @@ def proxy_dependency_map(cfg, exportData):
     target_dir = input_cfg.get('inputs', 'TARGET_DIR')
 
     backend_cfg = utils.parse_config('backend.properties')
-    source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')
+    source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')  # noqa
 
     current_dir = os.getcwd()
-    apis_dirs = current_dir+'/'+target_dir+'/'+export_dir_name+source_unzipped_apis
+    apis_dirs = current_dir+'/'+target_dir+'/'+export_dir_name+source_unzipped_apis  # noqa
 
     result = dict()
     proxy_dir = apis_dirs
@@ -138,7 +140,7 @@ def proxy_dependency_map_parallel(arg_tuple):
                 f"{proxy_dir}/{each_dir}/apiproxy")
         )
 
-        each_proxy_rel = utils.get_proxy_objects_relationships(each_proxy_dict)
+        each_proxy_rel = utils.get_proxy_objects_relationships(each_proxy_dict)  # noqa
         proxyDependencyMap[each_dir] = dict()
 
         # checking if the pe > count_provided
@@ -157,15 +159,15 @@ def proxy_dependency_map_parallel(arg_tuple):
             for dir_name, each_proxy_split in proxy_split_result.items():
                 proxyDependencyMap[dir_name] = dict()
                 proxy_dict = utils.read_proxy_artifacts(
-                    f"./{target_dir}/{export_dir_name}/{unifier_output_dir}/{dir_name}/apiproxy",
+                    f"./{target_dir}/{export_dir_name}/{unifier_output_dir}/{dir_name}/apiproxy",  # noqa
                     utils.parse_proxy_root_sharding(
-                        f"./{target_dir}/{export_dir_name}/{unifier_output_dir}/{dir_name}/apiproxy")
+                        f"./{target_dir}/{export_dir_name}/{unifier_output_dir}/{dir_name}/apiproxy")  # noqa
                 )
 
                 proxy_rel = utils.get_proxy_objects_relationships(proxy_dict)
                 proxyDependencyMap = build_proxy_dependency(
                     proxyDependencyMap, proxy_rel, proxy_dict, dir_name)
-                proxyDependencyMap[dir_name]["qualification"] = qualification_report_info(
+                proxyDependencyMap[dir_name]["qualification"] = qualification_report_info(  # noqa
                     proxy_dict)
                 proxyDependencyMap[dir_name]["unifier_created"] = True
                 proxyDependencyMap[each_dir]["split_output_names"].append(
@@ -173,31 +175,32 @@ def proxy_dependency_map_parallel(arg_tuple):
         else:
             proxyDependencyMap = build_proxy_dependency(
                 proxyDependencyMap, each_proxy_rel, each_proxy_dict, each_dir)
-        proxyDependencyMap[each_dir]["qualification"] = qualification_report_info(
+        proxyDependencyMap[each_dir]["qualification"] = qualification_report_info(  # noqa
             each_proxy_dict)
 
     except Exception as error:
         logger.error(
-            f"Error in proxy dependency map parallel function. ERROR-INFO - {error} {each_dir}")
+            f"Error in proxy dependency map parallel function. ERROR-INFO - {error} {each_dir}")  # noqa
     finally:
         return proxyDependencyMap
 
 
-def build_proxy_dependency(proxyDependencyMap, each_proxy_rel, each_proxy_dict, each_dir):
+def build_proxy_dependency(proxyDependencyMap, each_proxy_rel,
+                           each_proxy_dict, each_dir):
     for proxyname, values in each_proxy_rel.items():
         if each_proxy_rel[proxyname].get('Policies') is not None:
             for eachpolicy in each_proxy_rel[proxyname]['Policies']:
-                if "FlowCallout" in list(each_proxy_dict['Policies'][eachpolicy].keys()):
-                    if "SharedFlowBundle" in each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]:
-                        if not proxyDependencyMap[each_dir].get('SharedFlow'):
+                if "FlowCallout" in list(each_proxy_dict['Policies'][eachpolicy].keys()):  # noqa
+                    if "SharedFlowBundle" in each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]:  # noqa
+                        if not proxyDependencyMap[each_dir].get('SharedFlow'):  # noqa
                             proxyDependencyMap[each_dir]['SharedFlow'] = [
-                                each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]["SharedFlowBundle"]]
+                                each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]["SharedFlowBundle"]]  # noqa
                         else:
-                            proxyDependencyMap[each_dir]['SharedFlow'].append(
-                                each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]["SharedFlowBundle"])
+                            proxyDependencyMap[each_dir]['SharedFlow'].append(  # noqa
+                                each_proxy_dict['Policies'][eachpolicy]["FlowCallout"]["SharedFlowBundle"])  # noqa
 
-                if "KeyValueMapOperations" in list(each_proxy_dict['Policies'][eachpolicy].keys()):
-                    kvmname = each_proxy_dict['Policies'][eachpolicy]['KeyValueMapOperations'].get(
+                if "KeyValueMapOperations" in list(each_proxy_dict['Policies'][eachpolicy].keys()):  # noqa
+                    kvmname = each_proxy_dict['Policies'][eachpolicy]['KeyValueMapOperations'].get(  # noqa
                         '@mapIdentifier')
                     if not proxyDependencyMap[each_dir].get('KVM'):
                         proxyDependencyMap[each_dir]['KVM'] = [kvmname]
@@ -205,39 +208,39 @@ def build_proxy_dependency(proxyDependencyMap, each_proxy_rel, each_proxy_dict, 
                         proxyDependencyMap[each_dir]['KVM'].append(kvmname)
 
         if each_proxy_rel[proxyname].get('TargetEndpoints') is not None:
-            for eachtargetendpoint in each_proxy_rel[proxyname]['TargetEndpoints']:
-                if 'HostedTarget' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():
+            for eachtargetendpoint in each_proxy_rel[proxyname]['TargetEndpoints']:  # noqa
+                if 'HostedTarget' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():  # noqa
                     return proxyDependencyMap
-                if 'LocalTargetConnection' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():
+                if 'LocalTargetConnection' in each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint'].keys():  # noqa
                     return proxyDependencyMap
-                targetservers = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(
+                targetservers = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(  # noqa
                     'LoadBalancer')
                 if targetservers is not None:
                     if isinstance(targetservers.get('Server'), dict):
-                        if not proxyDependencyMap[each_dir].get("TargetServer"):
-                            proxyDependencyMap[each_dir]["TargetServer"] = [
+                        if not proxyDependencyMap[each_dir].get("TargetServer"):  # noqa
+                            proxyDependencyMap[each_dir]["TargetServer"] = [  # noqa
                                 targetservers.get('@name')]
                         else:
-                            proxyDependencyMap[each_dir]["TargetServer"].append(
+                            proxyDependencyMap[each_dir]["TargetServer"].append(  # noqa
                                 targetservers.get('@name'))
                     else:
                         for targetdict in targetservers.get('Server'):
-                            if not proxyDependencyMap[each_dir].get("TargetServer"):
-                                proxyDependencyMap[each_dir]["TargetServer"] = [
+                            if not proxyDependencyMap[each_dir].get("TargetServer"):  # noqa
+                                proxyDependencyMap[each_dir]["TargetServer"] = [  # noqa
                                     targetdict.get('@name')]
                             else:
-                                proxyDependencyMap[each_dir]["TargetServer"].append(
+                                proxyDependencyMap[each_dir]["TargetServer"].append(  # noqa
                                     targetdict.get('@name'))
                 else:
-                    if each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get('SSLInfo'):
-                        sslinfo = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(
+                    if each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get('SSLInfo'):  # noqa
+                        sslinfo = each_proxy_dict['TargetEndpoints'][eachtargetendpoint]['TargetEndpoint']['HTTPTargetConnection'].get(  # noqa
                             'SSLInfo')
-                        if not proxyDependencyMap[each_dir].get("References"):
+                        if not proxyDependencyMap[each_dir].get("References"):  # noqa
                             proxyDependencyMap[each_dir]["References"] = [
-                                {"Keystore": sslinfo.get('KeyStore'), "Trustore": sslinfo.get('TrustStore')}]
+                                {"Keystore": sslinfo.get('KeyStore'), "Trustore": sslinfo.get('TrustStore')}]  # noqa
                         else:
-                            proxyDependencyMap[each_dir]["References"].append(
-                                {"Keystore": sslinfo.get('KeyStore'), "Trustore": sslinfo.get('TrustStore')})
+                            proxyDependencyMap[each_dir]["References"].append(  # noqa
+                                {"Keystore": sslinfo.get('KeyStore'), "Trustore": sslinfo.get('TrustStore')})  # noqa
 
     return proxyDependencyMap
 
@@ -249,11 +252,10 @@ def sharding_wrapper(proxyDependencyMap, exportData):
     for env, values in exportData["envConfig"].items():
         result_dict = dict()
         for apiname in values["apis"].keys():
-
-            if proxyDependencyMap[apiname].get("is_split") != True:
+            if proxyDependencyMap[apiname].get("is_split") is not True:
                 result_dict[apiname] = proxyDependencyMap[apiname]
             else:
-                for splits in proxyDependencyMap[apiname]["split_output_names"]:
+                for splits in proxyDependencyMap[apiname]["split_output_names"]:  # noqa
                     result_dict[splits] = proxyDependencyMap[splits]
 
         result = environment_sharding(env, result_dict)
@@ -274,7 +276,7 @@ def environment_sharding(env, proxyDependencyMap):
     proxyDependencyMap = sorted_dict
 
     cfg = utils.parse_config('backend.properties')
-    per_env_proxy_limit = cfg.getint('inputs', 'NO_OF_PROXIES_PER_ENV_LIMITS')
+    per_env_proxy_limit = cfg.getint('inputs', 'NO_OF_PROXIES_PER_ENV_LIMITS')  # noqa
     total_units_per_envn = cfg.getint(
         'inputs', 'NO_OF_PROXIES_AND_SHARED_FLOWS_PER_ENV_LIMITS')
 
@@ -283,7 +285,7 @@ def environment_sharding(env, proxyDependencyMap):
     slot_cntr = 1
     notprocessed = dict()
     for apiname, dependencies in proxyDependencyMap.copy().items():
-        if dependencies.get("SharedFlow") and len(dependencies.get("SharedFlow")) > (total_units_per_envn-1):
+        if dependencies.get("SharedFlow") and len(dependencies.get("SharedFlow")) > (total_units_per_envn-1):  # noqa
             notprocessed[apiname] = dependencies
             del proxyDependencyMap[apiname]
 
@@ -294,14 +296,16 @@ def environment_sharding(env, proxyDependencyMap):
                 {"proxyname": [], "shared_flow": [], "target_server": []})
 
         # check total proxies in a slot
-        if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) >= per_env_proxy_limit or (len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(env_slot[env_name+str(slot_cntr)]["shared_flow"]) >= total_units_per_envn):
+        if (len(env_slot[env_name+str(slot_cntr)]["proxyname"]) >= per_env_proxy_limit   # noqa
+            or (len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(env_slot[env_name+str(slot_cntr)]["shared_flow"]) >= total_units_per_envn)):  # noqa
             slot_cntr = slot_cntr + 1
             env_slot[env_name+str(slot_cntr)] = dict(
                 {"proxyname": [], "shared_flow": [], "target_server": []})
 
         # add proxies and sharedflow provided sum of it <= than 60
         for apiname, dependencies in proxyDependencyMap.copy().items():
-            if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):
+            if (len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit  # noqa
+                and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn)):  # noqa
 
                 # add proxy name
                 env_slot[env_name+str(slot_cntr)]["proxyname"].append(apiname)
@@ -309,19 +313,19 @@ def environment_sharding(env, proxyDependencyMap):
                 # add unique shared flows
 
                 unique_shared_flow = find_unique_items(
-                    env_slot[env_name+str(slot_cntr)]["shared_flow"], dependencies.get("SharedFlow"))
+                    env_slot[env_name+str(slot_cntr)]["shared_flow"], dependencies.get("SharedFlow"))  # noqa
                 if unique_shared_flow:
-                    env_slot[env_name+str(slot_cntr)]["shared_flow"].clear()
+                    env_slot[env_name+str(slot_cntr)]["shared_flow"].clear()  # noqa
                     env_slot[env_name+str(slot_cntr)
                              ]["shared_flow"].extend(unique_shared_flow)
 
                 # add unique target servers
                 unique_target_server = find_unique_items(
-                    env_slot[env_name+str(slot_cntr)]["target_server"], dependencies.get("TargetServer"))
+                    env_slot[env_name+str(slot_cntr)]["target_server"], dependencies.get("TargetServer"))  # noqa
                 if unique_target_server:
-                    env_slot[env_name+str(slot_cntr)]["target_server"].clear()
+                    env_slot[env_name+str(slot_cntr)]["target_server"].clear()  # noqa
                     env_slot[env_name+str(slot_cntr)
-                             ]["target_server"].extend(unique_target_server)
+                             ]["target_server"].extend(unique_target_server)  # noqa
 
                 # remove proxy from proxy dependency map
                 del proxyDependencyMap[apiname]
@@ -329,9 +333,9 @@ def environment_sharding(env, proxyDependencyMap):
         # add proxies that have same sharedflow
         for apiname, dependencies in proxyDependencyMap.copy().items():
 
-            if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):
+            if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):  # noqa
 
-                if is_subset(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)].get("shared_flow")):
+                if is_subset(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)].get("shared_flow")):  # noqa
                     # add proxy name
                     env_slot[env_name+str(slot_cntr)
                              ]["proxyname"].append(apiname)
@@ -339,21 +343,21 @@ def environment_sharding(env, proxyDependencyMap):
                     # add unique target servers
                     if dependencies.get("TargetServer"):
                         unique_target_server = find_unique_items(
-                            env_slot[env_name+str(slot_cntr)]["target_server"], dependencies.get("TargetServer"))
+                            env_slot[env_name+str(slot_cntr)]["target_server"], dependencies.get("TargetServer"))  # noqa
                         env_slot[env_name+str(slot_cntr)
                                  ]["target_server"].clear()
                         env_slot[env_name+str(slot_cntr)
-                                 ]["target_server"].extend(unique_target_server)
+                                 ]["target_server"].extend(unique_target_server)  # noqa
 
                     # remove proxy from proxy dependency map
                     del proxyDependencyMap[apiname]
 
-        # add proxies that do not have sharedflow but share same target servers
+        # add proxies that do not have sharedflow but share same target servers  # noqa
         for apiname, dependencies in proxyDependencyMap.copy().items():
 
-            if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):
+            if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):  # noqa
 
-                if not dependencies.get('SharedFlow') and is_subset(dependencies.get("TargetServer"), env_slot[env_name+str(slot_cntr)].get("target_server")):
+                if not dependencies.get('SharedFlow') and is_subset(dependencies.get("TargetServer"), env_slot[env_name+str(slot_cntr)].get("target_server")):  # noqa
                     # add proxy name
                     env_slot[env_name+str(slot_cntr)
                              ]["proxyname"].append(apiname)
@@ -363,9 +367,9 @@ def environment_sharding(env, proxyDependencyMap):
 
         # add proxies that do not have any shareflow and target servers
         for apiname, dependencies in proxyDependencyMap.copy().items():
-            if not dependencies.get("SharedFlow") and not dependencies.get("TargetServer"):
+            if not dependencies.get("SharedFlow") and not dependencies.get("TargetServer"):  # noqa
 
-                if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):
+                if len(env_slot[env_name+str(slot_cntr)]["proxyname"]) < per_env_proxy_limit and ((len(env_slot[env_name+str(slot_cntr)]["proxyname"]) + len(find_unique_items(dependencies.get("SharedFlow"), env_slot[env_name+str(slot_cntr)]["shared_flow"]))) < total_units_per_envn):  # noqa
                     # add proxy name
                     env_slot[env_name+str(slot_cntr)
                              ]["proxyname"].append(apiname)

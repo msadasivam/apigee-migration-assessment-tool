@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import os
-from rest import RestClient, ApigeeError
-from requests.utils import quote as urlencode
-from base_logger import logger, EXEC_INFO
+from rest import RestClient
 
 
 class ApigeeNewGen():
@@ -27,29 +24,29 @@ class ApigeeNewGen():
         self.token = token
         self.env_type = env_type or 'ENVIRONMENT_TYPE_UNSPECIFIED'
         self.client = RestClient('oauth', token)
-    
+
     def get_org(self):
         url = f"{self.baseurl}/organizations/{self.project_id}"
         org = self.client.get(url)
         return org
-    
+
     def get_env_object(self, env, env_object, env_object_name):
         if env_object == 'resourcefiles':
-            url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name['type']}/{env_object_name['name']}"
+            url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name['type']}/{env_object_name['name']}"  # noqa
             env_object = self.client.get(url)
         else:
-            url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name}"
+            url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name}"  # noqa
             env_object = self.client.get(url)
         return env_object
 
     def create_api(self, api_type, api_name, proxy_bundle_path, action):
-        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}?name={api_name}"
+        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}?name={api_name}"  # noqa
         params = {
             'action': action,
             'validate': True
         }
         files = [
-            ('data', (api_name, open(proxy_bundle_path, 'rb'), 'application/zip'))
+            ('data', (api_name, open(proxy_bundle_path, 'rb'), 'application/zip'))  # noqa
         ]
         api_object = self.client.file_post(url, params, None, files)
         return api_object

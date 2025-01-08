@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ def get_env_variable(key):
 
 
 def is_token_valid(token):
-    url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"
+    url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
     r = requests.get(url)
     if r.status_code == 200:
         response_json = r.json()
@@ -62,7 +62,7 @@ def get_access_token():
         if is_token_valid(token):
             return token
     logger.error(
-        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! ')
+        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! ')  # noqa
     sys.exit(1)
 
 
@@ -71,7 +71,7 @@ def get_source_auth_token():
     if token is not None:
         return token
     logger.error(
-        "Please run \"export SOURCE_AUTH_TOKEN=`echo -n '<username>:<password>' | base64`\" first!")
+        "Please run \"export SOURCE_AUTH_TOKEN=`echo -n '<username>:<password>' | base64`\" first!")  # noqa
     sys.exit(1)
 
 
@@ -161,9 +161,11 @@ def get_proxy_endpoint_count(cfg):
         proxy_endpoint_count = cfg.getint('unifier', 'proxy_endpoint_count')
         max_proxy_endpoint_count = cfg.getint(
             'inputs', 'MAX_PROXY_ENDPOINT_LIMIT')
-        if not (proxy_endpoint_count > 0 and proxy_endpoint_count <= max_proxy_endpoint_count):
+        if not (proxy_endpoint_count > 0 and
+                proxy_endpoint_count <= max_proxy_endpoint_count):
             logger.error(
-                'ERROR: Proxy Endpoints should be > Zero(0)  &  <=', max_proxy_endpoint_count)
+                    'ERROR: Proxy Endpoints should be > Zero(0)  &  <=',
+                    max_proxy_endpoint_count)
             sys.exit(1)
     except ValueError:
         logger.error('proxy_endpoint_count should be a Number')
@@ -200,8 +202,9 @@ def write_csv_report(file_name, header, rows):
         for each_row in rows:
             writer.writerow(each_row)
 
-def retry(retries=3, delay=1, backoff=2):
-    def decorator(func):
+
+def retry(retries=3, delay=1, backoff=2):  # noqa
+    def decorator(func):   # noqa
         def wrapper(*args, **kwargs):
             for attempt in range(retries + 1):
                 try:
@@ -209,41 +212,44 @@ def retry(retries=3, delay=1, backoff=2):
                 except Exception as e:
                     if attempt == retries:
                         raise e
-                    logger.info(f"Retrying {func.__name__} in {delay} seconds... (Attempt {attempt + 1})")
+                    logger.info(f"Retrying {func.__name__} in {delay} seconds... (Attempt {attempt + 1})")  # noqa
                     sleep(delay)
-                    delay *= backoff
+                    delay *= backoff   # noqa
         return wrapper
     return decorator
 
-def run_parallel(func, args, workers=10, max_retries=3, retry_delay=1):
-    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+
+def run_parallel(func, args, workers=10,
+                 max_retries=3, retry_delay=1):
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:  # noqa
         # Initial futures (future: (arg, retry_count))
-        future_to_arg_retry = {executor.submit(func, arg): (arg, 0) for arg in args}
+        future_to_arg_retry = {executor.submit(func, arg): (arg, 0) for arg in args}  # noqa
 
         data = []
         while future_to_arg_retry:
-            done, _ = concurrent.futures.wait(future_to_arg_retry, return_when=concurrent.futures.FIRST_COMPLETED)
+            done, _ = concurrent.futures.wait(future_to_arg_retry, return_when=concurrent.futures.FIRST_COMPLETED)  # noqa
 
             for future in done:
                 arg, retry_count = future_to_arg_retry.pop(future)
                 try:
                     data.append(future.result())
-                except Exception as exc:
+                except Exception as exc:  # noqa
                     if retry_count < max_retries:
                         retry_count += 1
                         logger.warning(
-                            f"Task with arg {arg} failed ({retry_count}/{max_retries} retries), retrying in {retry_delay} seconds...",
+                            f"Task with arg {arg} failed ({retry_count}/{max_retries} retries), retrying in {retry_delay} seconds...",  # noqa
                             exc_info=True,
                         )
                         sleep(retry_delay)
-                        future_to_arg_retry[executor.submit(func, arg)] = (arg, retry_count)
+                        future_to_arg_retry[executor.submit(func, arg)] = (arg, retry_count)  # noqa
                     else:
                         data.append("Exception")
                         logger.error(
-                            f"Task with arg {arg} failed after {max_retries} retries.",
+                            f"Task with arg {arg} failed after {max_retries} retries.",  # noqa
                             exc_info=True
                         )
     return data
+
 
 def get_proxy_entrypoint(dir):
     try:
@@ -259,7 +265,7 @@ def get_proxy_entrypoint(dir):
         else:
             if len(ent) > 1:
                 logger.error(
-                    f"ERROR: Directory \"{dir}\" contains multiple xml files at root")
+                    f"ERROR: Directory \"{dir}\" contains multiple xml files at root")  # noqa
             else:
                 logger.error(
                     f"ERROR: Directory \"{dir}\" has no xml file at root")
@@ -391,7 +397,7 @@ def read_proxy_artifacts(dir, entrypoint):
 
 def get_target_endpoints(ProxyEndpointData):
     target_endpoints = []
-    routes = ProxyEndpointData.get('RouteRule',[])
+    routes = ProxyEndpointData.get('RouteRule', [])
     if len(routes) > 0:
         routes = (
             [ProxyEndpointData['RouteRule']]
@@ -418,25 +424,26 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
 
     if not fault_rule:
         if Flow.get('Request'):
-                if isinstance(Flow['Request'], list) and len(Flow['Request']) > 0:
-                    Flow['Request'] = Flow['Request'][0]
-                Request = ([] if Flow['Request'] is None else (
-                            [] if Flow['Request'].get('Step') is None else (
-                    [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)
-                    else Flow['Request']['Step']
-                ))
-                )
+            if isinstance(Flow['Request'], list) and len(Flow['Request']) > 0:
+                Flow['Request'] = Flow['Request'][0]
+            Request = ([] if Flow['Request'] is None else (
+                        [] if Flow['Request'].get('Step') is None else
+                        (
+                            [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)  # noqa
+                            else Flow['Request']['Step']
+                        )))
         else:
             Request = []
         if Flow.get('Response'):
-            if isinstance(Flow['Response'], list) and len(Flow['Response']) > 0:
-                    Flow['Response'] = Flow['Response'][0]
+            if (isinstance(Flow['Response'], list) and
+                    len(Flow['Response']) > 0):
+                Flow['Response'] = Flow['Response'][0]
             Response = ([] if Flow['Response'] is None else (
-                            [] if Flow['Response'].get('Step') is None else (
-                        [Flow['Response']['Step']] if isinstance(Flow['Response']['Step'], dict)
-                        else Flow['Response']['Step']
-                        ))
-                        )
+                            [] if Flow['Response'].get('Step') is None else
+                            (
+                            [Flow['Response']['Step']] if isinstance(Flow['Response']['Step'], dict)  # noqa
+                                else Flow['Response']['Step']
+                            )))
         else:
             Response = []
         for each_flow in Request:
@@ -444,13 +451,13 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
         for each_flow in Response:
             policies.extend(get_all_policies_from_step(each_flow))
     else:
-        if Flow is None :
+        if Flow is None:
             FaultRules = []
         elif Flow.get('FaultRule', None) is None:
             FaultRules = []
         else:
             FaultRules = (
-                [Flow.get('Step')] if isinstance(Flow['FaultRule'].get('Step'), dict)
+                [Flow.get('Step')] if isinstance(Flow['FaultRule'].get('Step'), dict)  # noqa
                 else Flow['FaultRule'].get('Step')
             )
         '''
@@ -459,7 +466,7 @@ def get_all_policies_from_flow(Flow, fault_rule=False):
         else :
             if isinstance(Flow, list) :
                 if 'Step' in Flow :
-                    FaultRules = ([Flow['Step']] if isinstance(Flow['Step'],dict) else Flow['Step'])
+                    FaultRules = ([Flow['Step']] if isinstance(Flow['Step'],dict) else Flow['Step'])   # noqa
                 else:
                     FaultRules = []
                     
@@ -483,20 +490,20 @@ def get_all_policies_from_endpoint(endpointData, endpointType):
     )
 
     if (isinstance(endpointData[endpointType].get('Flows'), list) and
-        len(endpointData[endpointType].get('Flows')) > 0):
-        endpointData[endpointType]['Flows'] = endpointData[endpointType]['Flows'][0]
+            len(endpointData[endpointType].get('Flows')) > 0):
+        endpointData[endpointType]['Flows'] = endpointData[endpointType]['Flows'][0]  # noqa
 
     Flows = (
         []
         if endpointData[endpointType].get('Flows') is None else
-        ( [] if endpointData[endpointType].get('Flows').get('Flow') is None
-        else (
-            [endpointData[endpointType]['Flows']['Flow']]
-            if isinstance(
-                endpointData[endpointType]['Flows']['Flow'], dict)
-            else
-            endpointData[endpointType]['Flows']['Flow']
-        )))
+        ([] if endpointData[endpointType].get('Flows').get('Flow') is None
+            else (
+                [endpointData[endpointType]['Flows']['Flow']]
+                if isinstance(
+                    endpointData[endpointType]['Flows']['Flow'], dict)
+                else
+                endpointData[endpointType]['Flows']['Flow']
+            )))
 
     for eachFlow in Flows:
         policies.extend(
@@ -531,11 +538,9 @@ def get_proxy_objects_relationships(proxy_dict):
             policies.extend(get_all_policies_from_endpoint(
                 each_te, 'TargetEndpoint'))
         proxy_object_map[ProxyEndpoint] = {
-            # 'Policies' : get_all_policies_from_endpoint(ProxyEndpointData,'ProxyEndpoint'),
             'Policies': policies,
-            'BasePath': ProxyEndpointData['ProxyEndpoint']['HTTPProxyConnection'].get('BasePath'),
+            'BasePath': ProxyEndpointData['ProxyEndpoint']['HTTPProxyConnection'].get('BasePath'),  # noqa
             'TargetEndpoints': target_endpoints,
-            # 'Resources' : []
         }
 
     return proxy_object_map
@@ -817,6 +822,6 @@ def clone_proxies(source_dir, target_dir,
 
     except Exception as error:
         logger.error(
-            f"some error occurred in clone proxy function error. ERROR-INFO - {error}")
+            f"some error occurred in clone proxy function error. ERROR-INFO - {error}")  # noqa
     finally:
         return merged_pes

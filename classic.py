@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ class ApigeeClassic():
         self.token = token
         self.auth_type = auth_type
         self.client = RestClient(self.auth_type, token, ssl_verify)
-        self.requires_pagination = ['apis', 'apps', 'developers', 'apiproducts']
+        self.requires_pagination = ['apis', 'apps', 'developers',
+                                    'apiproducts']
         self.can_expand = {
             'apps': {'expand_key': 'app', 'id': 'appId'},
             'developers': {'expand_key': 'developer', 'id': 'email'},
@@ -46,7 +47,7 @@ class ApigeeClassic():
         org_objects = []
         object_count = 100
         if org_object in self.requires_pagination:
-            start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}"
+            start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}"  # noqa
             each_org_object = self.client.get(start_url)
             org_objects.extend(each_org_object)
             while len(each_org_object) > 0:
@@ -65,16 +66,16 @@ class ApigeeClassic():
         object_count = 100
         expand_key = self.can_expand.get(org_object).get('expand_key')
         id_key = self.can_expand.get(org_object).get('id')
-        start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}&expand=true"
+        start_url = f"{self.baseurl}/organizations/{self.org}/{org_object}?count={object_count}&expand=true"  # noqa
         each_org_object = self.client.get(start_url)
-        each_org_object = each_org_object.get(expand_key,{})
+        each_org_object = each_org_object.get(expand_key, {})
         for each_item in each_org_object:
             org_objects[each_item[id_key]] = each_item
         while len(each_org_object) > 0:
             startKey = each_org_object[-1].get(id_key)
             params = {'startKey': startKey}
             each_org_object = self.client.get(start_url, params=params)
-            each_org_object = each_org_object.get(expand_key,{})
+            each_org_object = each_org_object.get(expand_key, {})
             each_org_object.pop(0)
             for each_item in each_org_object:
                 org_objects[each_item[id_key]] = each_item
@@ -84,17 +85,17 @@ class ApigeeClassic():
         if org_object == "resourcefiles":
             type = org_object_name["type"]
             name = org_object_name["name"]
-            url = f"{self.baseurl}/organizations/{self.org}/{org_object}/{type}/{name}"
+            url = f"{self.baseurl}/organizations/{self.org}/{org_object}/{type}/{name}"  # noqa
             data = self.client.get(url)
             return data
         else:
             org_object_name = urlencode(org_object_name)
-            url = f"{self.baseurl}/organizations/{self.org}/{org_object}/{org_object_name}"
+            url = f"{self.baseurl}/organizations/{self.org}/{org_object}/{org_object_name}"  # noqa
             org_object = self.client.get(url)
             return org_object
 
     def list_env_objects(self, env, env_object):
-        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}"
+        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}"  # noqa
         env_objects = self.client.get(url)
         return env_objects
 
@@ -102,21 +103,21 @@ class ApigeeClassic():
         if env_object == "resourcefiles":
             type = env_object_name["type"]
             name = env_object_name["name"]
-            url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}/{type}/{name}"
+            url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}/{type}/{name}"  # noqa
             data = self.client.get(url)
         else:
             env_object_name = urlencode(env_object_name)
-            url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}/{env_object_name}"
+            url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/{env_object}/{env_object_name}"  # noqa
             data = self.client.get(url)
         return data
 
     def list_env_vhosts(self, env):
-        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/virtualhosts"
+        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/virtualhosts"  # noqa
         env_objects = self.client.get(url)
         return env_objects
 
     def get_env_vhost(self, env, vhost):
-        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/virtualhosts/{vhost}"
+        url = f"{self.baseurl}/organizations/{self.org}/environments/{env}/virtualhosts/{vhost}"  # noqa
         env_object = self.client.get(url)
         return env_object
 
@@ -126,23 +127,23 @@ class ApigeeClassic():
         return apis
 
     def list_api_revisions(self, api_type, api_name):
-        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/revisions"
+        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/revisions"  # noqa
         revisions = self.client.get(url)
         return revisions
 
     def api_env_mapping(self, api_type, api_name):
-        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/deployments"
+        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/deployments"  # noqa
         deployments = self.client.get(url)
         return deployments
 
     def list_apis_env(self, env_name):
-        url = f"{self.baseurl}/organizations/{self.org}/environments/{env_name}/deployments"
+        url = f"{self.baseurl}/organizations/{self.org}/environments/{env_name}/deployments"  # noqa
         deployments = self.client.get(url)
         apis_list = [api["name"] for api in deployments["aPIProxy"]]
         return apis_list
 
     def fetch_api_revision(self, api_type, api_name, revision, export_dir):
-        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/revisions/{revision}?format=bundle"
+        url = f"{self.baseurl}/organizations/{self.org}/{api_type}/{api_name}/revisions/{revision}?format=bundle"  # noqa
         bundle = self.client.file_get(url)
         self.write_proxy_bundle(export_dir, api_name, bundle)
 

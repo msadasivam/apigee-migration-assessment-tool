@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ import json
 
 class QualificationReport():
 
-    def __init__(self, workbookname, export_data, topology_mapping, cfg, backend_cfg, orgName):
+    def __init__(self, workbookname, export_data,
+                 topology_mapping, cfg, backend_cfg, orgName):
         self.workbook = xlsxwriter.Workbook(workbookname)
         self.export_data = export_data
         self.topology_mapping = topology_mapping
@@ -55,35 +56,58 @@ class QualificationReport():
 
         # Information blue box formats
         self.info_format = self.workbook.add_format(
-            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'font_size': 12, 'valign': 'top'})
+            {'bg_color': '#4285f4', 'font_color': 'white',
+             'border': 1, 'text_wrap': True, 'font_size': 12,
+             'valign': 'top'})
         self.info_bold_format = self.workbook.add_format(
-            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'bold': True, 'font_size': 18})
+            {'bg_color': '#4285f4', 'font_color': 'white',
+             'border': 1, 'text_wrap': True, 'bold': True,
+             'font_size': 18})
         self.info_italic_underline_format = self.workbook.add_format(
-            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'italic': True, 'underline': True, 'font_size': 14})
+            {'bg_color': '#4285f4', 'font_color': 'white',
+             'border': 1, 'text_wrap': True, 'italic': True,
+             'underline': True, 'font_size': 14})
         self.info_bold_underline_format = self.workbook.add_format(
-            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'bold': True, 'underline': True, 'font_size': 14})
+            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1,
+             'text_wrap': True, 'bold': True, 'underline': True,
+             'font_size': 14})
         self.ref_link_heading_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'bold': True, 'underline': True, 'font_size': 14})
+            {'border': 1, 'text_wrap': True, 'bold': True,
+             'underline': True, 'font_size': 14})
         self.ref_link_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'bold': False, 'underline': True, 'font_size': 12, 'font_color': 'blue'})
+            {'border': 1, 'text_wrap': True, 'bold': False,
+             'underline': True, 'font_size': 12, 'font_color': 'blue'})
 
         # Qualification Report Summary
         self.summary_main_header_format = self.workbook.add_format(
-            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'bold': True, 'font_size': 24, 'valign': 'center'})
+            {'bg_color': '#4285f4', 'font_color': 'white', 'border': 1,
+             'text_wrap': True, 'bold': True, 'font_size': 24,
+             'valign': 'center'})
         self.summary_block_header_format = self.workbook.add_format(
-            {'bg_color': '#000000', 'font_color': 'white', 'border': 1, 'text_wrap': True, 'font_size': 18, 'valign': 'center'})
+            {'bg_color': '#000000', 'font_color': 'white', 'border': 1,
+             'text_wrap': True, 'font_size': 18, 'valign': 'center'})
         self.summary_link_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'underline': True, 'font_size': 16, 'font_color': 'blue'})
+            {'border': 1, 'text_wrap': True, 'underline': True,
+             'font_size': 16, 'font_color': 'blue'})
         self.summary_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'font_size': 16, 'font_color': 'black'})
+            {'border': 1, 'text_wrap': True, 'font_size': 16,
+             'font_color': 'black'})
         self.summary_note_blue_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'font_size': 13, 'font_color': 'blue', 'valign': 'center', "align": "center"})
+            {'border': 1, 'text_wrap': True, 'font_size': 13,
+             'font_color': 'blue', 'valign': 'center',
+             "align": "center"})
         self.summary_note_green_format = self.workbook.add_format(
-            {'border': 1, 'text_wrap': True, 'font_size': 13, 'font_color': 'green', 'valign': 'center', "align": "center"})
+            {'border': 1, 'text_wrap': True, 'font_size': 13,
+             'font_color': 'green', 'valign': 'center',
+             "align": "center"})
         self.summary_cell_danger_format = self.workbook.add_format(
-            {'bg_color': '#f5cbcc', 'valign': 'vcenter', "align": "center", 'border': 1, 'text_wrap': True, 'font_size': 16})
+            {'bg_color': '#f5cbcc', 'valign': 'vcenter',
+             "align": "center", 'border': 1, 'text_wrap': True,
+             'font_size': 16})
         self.summary_cell_green_format = self.workbook.add_format(
-            {'bg_color': '#5fbd76', 'valign': 'vcenter', "align": "center", 'border': 1, 'text_wrap': True, 'font_size': 16})
+            {'bg_color': '#5fbd76', 'valign': 'vcenter',
+             "align": "center", 'border': 1, 'text_wrap': True,
+             'font_size': 16})
 
     # Sheet column heading
     def qualification_report_heading(self, headers, sheet):
@@ -122,46 +146,46 @@ class QualificationReport():
         alph = 65 + len(mapping_json["headers"])
 
         if (type(mapping_json["info_block"]) is dict):
-            sheet.set_column(len(mapping_json["headers"]), len(mapping_json["headers"])+int(mapping_json["info_block"]["col_merge"]), len(
-                mapping_json["info_block"]["text"].split("\n")[int(mapping_json["info_block"]["text_line_no_for_col_count"])]) / int(mapping_json["info_block"]["col_merge"]))
+            sheet.set_column(len(mapping_json["headers"]), len(mapping_json["headers"])+int(mapping_json["info_block"]["col_merge"]), len(  # noqa
+                mapping_json["info_block"]["text"].split("\n")[int(mapping_json["info_block"]["text_line_no_for_col_count"])]) / int(mapping_json["info_block"]["col_merge"]))  # noqa
 
             final_text = self.get_final_info_text_and_format_arr(
                 mapping_json["info_block"]["text"])
 
             sheet.merge_range(
-                f'{chr(alph)}{int(mapping_json["info_block"]["start_row"])}:{chr(alph+(int(mapping_json["info_block"]["col_merge"])-1))}{int(mapping_json["info_block"]["end_row"])}', "", self.info_format)
+                f'{chr(alph)}{int(mapping_json["info_block"]["start_row"])}:{chr(alph+(int(mapping_json["info_block"]["col_merge"])-1))}{int(mapping_json["info_block"]["end_row"])}', "", self.info_format)  # noqa
             sheet.write_rich_string(
-                f'{chr(alph)}{int(mapping_json["info_block"]["start_row"])}', *final_text)
+                f'{chr(alph)}{int(mapping_json["info_block"]["start_row"])}', *final_text)  # noqa
 
         elif (type(mapping_json["info_block"]) is list):
             for block in mapping_json["info_block"]:
                 if "text_line_no_for_col_count" in block:
-                    sheet.set_column(len(mapping_json["headers"]), len(mapping_json["headers"])+int(block["col_merge"]), len(
-                        block["text"].split("\n")[int(block["text_line_no_for_col_count"])]) / int(block["col_merge"]))
+                    sheet.set_column(len(mapping_json["headers"]), len(mapping_json["headers"])+int(block["col_merge"]), len(  # noqa
+                        block["text"].split("\n")[int(block["text_line_no_for_col_count"])]) / int(block["col_merge"]))  # noqa
 
                 final_text = self.get_final_info_text_and_format_arr(
                     block["text"])
 
                 sheet.merge_range(
-                    f'{chr(alph)}{int(block["start_row"])}:{chr(alph+(int(block["col_merge"])-1))}{int(block["end_row"])}', "", self.info_format)
+                    f'{chr(alph)}{int(block["start_row"])}:{chr(alph+(int(block["col_merge"])-1))}{int(block["end_row"])}', "", self.info_format)  # noqa
                 sheet.write_rich_string(
                     f'{chr(alph)}{int(block["start_row"])}', *final_text)
 
-        link_start_row = int(mapping_json["info_block"]["end_row"])+2 if type(mapping_json["info_block"]
-                                                                              ) is dict else mapping_json["info_block"][len(mapping_json["info_block"])-1]["end_row"]+2
+        link_start_row = int(mapping_json["info_block"]["end_row"])+2 if type(mapping_json["info_block"]  # noqa
+                                                                              ) is dict else mapping_json["info_block"][len(mapping_json["info_block"])-1]["end_row"]+2  # noqa
 
-        if ("link" in mapping_json["info_block"] or "link" in mapping_json):
+        if ("link" in mapping_json["info_block"] or "link" in mapping_json):  # noqa
 
             link_arr = mapping_json["info_block"]["link"] if type(
-                mapping_json["info_block"]) is dict else mapping_json["link"]
+                mapping_json["info_block"]) is dict else mapping_json["link"]  # noqa
 
             sheet.write_string(f'{chr(alph)}{int(link_start_row)}',
-                               f"Reference Link{'s:' if len(link_arr) > 1 else ':'}", self.ref_link_heading_format)
+                               f"Reference Link{'s:' if len(link_arr) > 1 else ':'}", self.ref_link_heading_format)  # noqa
             link_start_row = link_start_row+1
 
             for link_item in link_arr:
                 sheet.write_url(f'{chr(alph)}{link_start_row}',
-                                link_item["link"], self.ref_link_format, string=link_item["link_text"])
+                                link_item["link"], self.ref_link_format, string=link_item["link_text"])  # noqa
                 link_start_row = link_start_row+1
 
     def report_proxies_per_env(self):
@@ -212,7 +236,7 @@ class QualificationReport():
             # Total no of Proxies & Sharedflows
             col += 1
             totalOfProxiesAndSharedFlows = (noOfProxies + noOfSharedFlows)
-            if (totalOfProxiesAndSharedFlows > int(allowed_no_of_proxies_and_shared_flows_per_env)):
+            if (totalOfProxiesAndSharedFlows > int(allowed_no_of_proxies_and_shared_flows_per_env)):  # noqa
                 proxiesPerEnvSheet.write(
                     row, col, totalOfProxiesAndSharedFlows, self.danger_format)
             else:
@@ -259,14 +283,17 @@ class QualificationReport():
                         row, col, sslinfo['enabled'], self.danger_format)
                     col += 1
                     northBoundMTLSSheet.write(
-                        row, col, sslinfo['clientAuthEnabled'], self.danger_format)
+                        row, col, sslinfo['clientAuthEnabled'],
+                        self.danger_format)
                     col += 1
                     if sslinfo.get('keyStore'):
                         northBoundMTLSSheet.write(
-                            row, col, sslinfo['keyStore'], self.danger_format)
-                    elif vhost_content.get("useBuiltInFreeTrialCert") == True:
+                            row, col, sslinfo['keyStore'],
+                            self.danger_format)
+                    elif vhost_content.get("useBuiltInFreeTrialCert") is True:
                         northBoundMTLSSheet.write(
-                            row, col, "Free Trial Cert Used", self.danger_format)
+                            row, col, "Free Trial Cert Used",
+                            self.danger_format)
 
                 else:
                     col += 1
@@ -282,13 +309,13 @@ class QualificationReport():
 
         # Worksheet 4 - [Company And Developers]
         logger.info(
-            '------------------- Company And Developers -----------------------')
+            '------------------- Company And Developers -----------------------')  # noqa
         companiesAndDevelopers = self.workbook.add_worksheet(
             name='Company And Developers')
 
         # Headings
         self.qualification_report_heading(
-            company_and_developers_mapping["headers"], companiesAndDevelopers)
+            company_and_developers_mapping["headers"], companiesAndDevelopers)  # noqa
 
         orgConfig = self.export_data.get('orgConfig')
         companies = orgConfig['companies']
@@ -310,7 +337,7 @@ class QualificationReport():
     def report_anti_patterns(self):
 
         # Worksheet 5 - [Anti Patterns]
-        logger.info('------------------- Anti Patterns -----------------------')
+        logger.info('------------------- Anti Patterns -----------------------')  # noqa
         antiPatternsSheet = self.workbook.add_worksheet(name='Anti Patterns')
 
         # Headings
@@ -324,7 +351,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            AntiPatternQuota = values.get('qualification', {}).get('AntiPatternQuota', {})
+            AntiPatternQuota = values.get('qualification', {}).get('AntiPatternQuota', {})  # noqa
             for policy, value in AntiPatternQuota.items():
                 col = 0
                 antiPatternsSheet.write(row, col, self.orgName)
@@ -348,7 +375,7 @@ class QualificationReport():
 
         # Worksheet 6 - [Cache Without Expiry]
         logger.info(
-            '------------------- Cache Without Expiry -----------------------')
+            '------------------- Cache Without Expiry -----------------------')  # noqa
         cacheWithoutExpirySheet = self.workbook.add_worksheet(
             name='Cache Without Expiry')
 
@@ -356,7 +383,6 @@ class QualificationReport():
         self.qualification_report_heading(
             cache_without_expiry_mapping["headers"], cacheWithoutExpirySheet)
 
-        orgConfig = self.export_data.get('orgConfig')
         row = 1
 
         proxy_map = self.export_data['proxy_dependency_map']
@@ -364,7 +390,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            CacheWithoutExpiry = values.get('qualification', {}).get('CacheWithoutExpiry', {})
+            CacheWithoutExpiry = values.get('qualification', {}).get('CacheWithoutExpiry', {})  # noqa
             for policy, value in CacheWithoutExpiry.items():
                 col = 0
                 cacheWithoutExpirySheet.write(row, col, self.orgName)
@@ -386,26 +412,26 @@ class QualificationReport():
 
         # Worksheet 7 - [Apps Without ApiProducts]
         logger.info(
-            '------------------- Apps Without ApiProducts -----------------------')
+            '------------------- Apps Without ApiProducts -----------------------')  # noqa
         appsWithoutAPIProductsSheet = self.workbook.add_worksheet(
             name='Apps Without ApiProducts')
 
         # Headings
         self.qualification_report_heading(
-            apps_without_api_products_mapping["headers"], appsWithoutAPIProductsSheet)
+            apps_without_api_products_mapping["headers"], appsWithoutAPIProductsSheet)  # noqa
 
         orgConfig = self.export_data.get('orgConfig')
         row = 1
 
         apps = orgConfig['apps']
         for app, value in apps.items():
-            credentials = value.get('credentials',[])
+            credentials = value.get('credentials', [])
             if len(credentials) == 0:
                 col = 0
-                appsWithoutAPIProductsSheet.write(row, col, self.orgName)
+                appsWithoutAPIProductsSheet.write(row, col, self.orgName)  # noqa
                 # app name
                 col += 1
-                appsWithoutAPIProductsSheet.write(row, col, value.get('name','Unknown App Name'))
+                appsWithoutAPIProductsSheet.write(row, col, value.get('name', 'Unknown App Name'))  # noqa
                 # id
                 col += 1
                 appsWithoutAPIProductsSheet.write(row, col, app)
@@ -417,7 +443,7 @@ class QualificationReport():
                 products = value['credentials'][0]['apiProducts']
                 if len(products) == 0:
                     col = 0
-                    appsWithoutAPIProductsSheet.write(row, col, self.orgName)
+                    appsWithoutAPIProductsSheet.write(row, col, self.orgName)  # noqa
                     # app name
                     col += 1
                     appsWithoutAPIProductsSheet.write(row, col, value['name'])
@@ -432,13 +458,13 @@ class QualificationReport():
         appsWithoutAPIProductsSheet.autofit()
         # Info block
         self.qualification_report_info_box(
-            apps_without_api_products_mapping, appsWithoutAPIProductsSheet)
+            apps_without_api_products_mapping, appsWithoutAPIProductsSheet)  # noqa
 
     def report_json_path_enabled(self):
 
         # Worksheet 8 - [Json Path Enabled]
         logger.info(
-            '------------------- Json Path Enabled -----------------------')
+            '------------------- Json Path Enabled -----------------------')  # noqa
         jsonPathEnabledSheet = self.workbook.add_worksheet(
             name='Json Path Enabled')
 
@@ -453,7 +479,7 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            JsonPathEnabled = values.get('qualification', {}).get('JsonPathEnabled', {})
+            JsonPathEnabled = values.get('qualification', {}).get('JsonPathEnabled', {})  # noqa
 
             for policy, value in JsonPathEnabled.items():
                 col = 0
@@ -475,7 +501,7 @@ class QualificationReport():
     def report_cname_anomaly(self):
 
         # Worksheet 9 - [CName Anomaly]
-        logger.info('------------------- CName Anomaly -----------------------')
+        logger.info('------------------- CName Anomaly -----------------------')  # noqa
         cnameAnamoly = self.workbook.add_worksheet(name='CName Anomaly')
 
         # Headings
@@ -501,13 +527,13 @@ class QualificationReport():
 
         cnameAnamoly.autofit()
         # Info block
-        self.qualification_report_info_box(cname_anomaly_mapping, cnameAnamoly)
+        self.qualification_report_info_box(cname_anomaly_mapping, cnameAnamoly)  # noqa
 
     def report_unsupported_policies(self):
 
         # Worksheet 10 - [Unsupported Policies]
         logger.info(
-            '------------------- Unsupported Policies -----------------------')
+            '------------------- Unsupported Policies -----------------------')  # noqa
         unsupportedPolicesSheet = self.workbook.add_worksheet(
             name='Unsupported Policies')
 
@@ -515,7 +541,6 @@ class QualificationReport():
         self.qualification_report_heading(
             unsupported_polices_mapping["headers"], unsupportedPolicesSheet)
 
-        orgConfig = self.export_data.get('orgConfig')
         row = 1
 
         proxy_map = self.export_data['proxy_dependency_map']
@@ -545,7 +570,7 @@ class QualificationReport():
 
         # Worksheet 12 - [Product Limits - API Limits]
         logger.info(
-            '------------------- Product Limits - API Limits -----------------------')
+            '------------------- Product Limits - API Limits -----------------------')  # noqa
         apiLimitsSheet = self.workbook.add_worksheet(
             name='Product Limits - API Limits')
 
@@ -581,7 +606,7 @@ class QualificationReport():
 
         # Worksheet 13 - [Product Limits - Org Limits]
         logger.info(
-            '------------------- Product Limits - Org Limits -----------------------')
+            '------------------- Product Limits - Org Limits -----------------------')  # noqa
         orgLimitsSheet = self.workbook.add_worksheet(
             name='Product Limits - Org Limits')
         allowed_no_of_kvms_per_org = self.backend_cfg.get(
@@ -614,10 +639,10 @@ class QualificationReport():
 
         # encrypted kvm
         col += 1
-        encrypted_count=0
+        encrypted_count = 0
         for kvm, kvm_content in orgConfig['kvms'].items():
             if kvm_content.get("encrypted"):
-                encrypted_count=encrypted_count+1
+                encrypted_count = encrypted_count+1
 
         if encrypted_count > 0:
             orgLimitsSheet.write(row, col, encrypted_count, self.danger_format)
@@ -626,7 +651,7 @@ class QualificationReport():
 
         # non encrypted kvm
         col += 1
-        orgLimitsSheet.write(row, col, len(orgConfig['kvms']) - encrypted_count)
+        orgLimitsSheet.write(row, col, len(orgConfig['kvms']) - encrypted_count)  # noqa
 
         # apps count
         col += 1
@@ -638,7 +663,7 @@ class QualificationReport():
 
         # api products count
         col += 1
-        if len(orgConfig['apiProducts']) > int(allowed_no_of_apirproducts_per_org):
+        if len(orgConfig['apiProducts']) > int(allowed_no_of_apirproducts_per_org):  # noqa
             orgLimitsSheet.write(row, col, len(
                 orgConfig['apiProducts']), self.danger_format)
         else:
@@ -650,13 +675,13 @@ class QualificationReport():
 
         orgLimitsSheet.autofit()
         # Info block
-        self.qualification_report_info_box(org_limits_mapping, orgLimitsSheet)
+        self.qualification_report_info_box(org_limits_mapping, orgLimitsSheet)  # noqa
 
     def report_env_limits(self):
 
         # Worksheet 14 - [Product Limits - Env Limits]
         logger.info(
-            '------------------- Product Limits - Env Limits -----------------------')
+            '------------------- Product Limits - Env Limits -----------------------')  # noqa
         envLimitsSheet = self.workbook.add_worksheet(
             name='Product Limits - Env Limits')
 
@@ -681,7 +706,7 @@ class QualificationReport():
             envLimitsSheet.write(row, col, key)
             # Target servers
             col += 1
-            if len(value['targetServers']) > int(allowed_no_of_target_servers_per_env):
+            if len(value['targetServers']) > int(allowed_no_of_target_servers_per_env):  # noqa
                 envLimitsSheet.write(row, col, len(
                     value['targetServers']), self.danger_format)
             else:
@@ -705,19 +730,19 @@ class QualificationReport():
 
             # encrypted kvm
             col += 1
-            encrypted_count=0
+            encrypted_count = 0
             for kvm, kvm_content in value['kvms'].items():
                 if len(kvm) != 0 and kvm_content.get("encrypted"):
-                    encrypted_count=encrypted_count+1
+                    encrypted_count = encrypted_count+1
 
             if encrypted_count > 0:
-                envLimitsSheet.write(row, col, encrypted_count, self.danger_format)
+                envLimitsSheet.write(row, col, encrypted_count, self.danger_format)  # noqa
             else:
                 envLimitsSheet.write(row, col, encrypted_count)
 
             # non encrypted kvm
             col += 1
-            envLimitsSheet.write(row, col, len(value['kvms']) - encrypted_count)
+            envLimitsSheet.write(row, col, len(value['kvms']) - encrypted_count)  # noqa
 
             # Virtual hosts
             col += 1
@@ -735,13 +760,13 @@ class QualificationReport():
 
         # Worksheet 15 - [APIs With Multiple BasePaths]
         logger.info(
-            '------------------- APIs With Multiple BasePaths -----------------------')
+            '------------------- APIs With Multiple BasePaths -----------------------')  # noqa
         apiWithMultipleBasepathsSheet = self.workbook.add_worksheet(
             name='APIs With Multiple BasePaths')
 
         # Headings
         self.qualification_report_heading(
-            api_with_multiple_basepath_mapping["headers"], apiWithMultipleBasepathsSheet)
+            api_with_multiple_basepath_mapping["headers"], apiWithMultipleBasepathsSheet)  # noqa
 
         row = 1
 
@@ -750,9 +775,9 @@ class QualificationReport():
             if values.get("unifier_created"):
                 continue
 
-            base_paths = values.get('qualification', {}).get('base_paths', [])
+            base_paths = values.get('qualification', {}).get('base_paths', [])  # noqa
             base_paths = [
-                str(path) if path is not None else 'None' for path in base_paths]
+                str(path) if path is not None else 'None' for path in base_paths]  # noqa
             col = 0
             apiWithMultipleBasepathsSheet.write(row, col, self.orgName)
             col += 1
@@ -773,13 +798,13 @@ class QualificationReport():
         apiWithMultipleBasepathsSheet.autofit()
         # Info block
         self.qualification_report_info_box(
-            api_with_multiple_basepath_mapping, apiWithMultipleBasepathsSheet)
+            api_with_multiple_basepath_mapping, apiWithMultipleBasepathsSheet)  # noqa
 
     def sharding(self):
 
         # Worksheet 11 - [Sharded envs]
         logger.info(
-            '------------------- Sharded Env Info -----------------------')
+            '------------------- Sharded Env Info -----------------------')  # noqa
         shardingOutput = self.workbook.add_worksheet(
             name='Target Environments')
 
@@ -819,7 +844,7 @@ class QualificationReport():
 
     def report_alias_keycert(self):
         logger.info(
-            '------------------- Aliases with private keys -----------------------')
+            '------------------- Aliases with private keys -----------------------')  # noqa
         aliasesWithPrivateKeys = self.workbook.add_worksheet(
             name='Aliases with private keys')
 
@@ -828,10 +853,10 @@ class QualificationReport():
             aliases_with_private_keys["headers"], aliasesWithPrivateKeys)
 
         row = 1
-        for env, content in self.export_data['envConfig'].items():
-            for keystore, keystore_content in content.get('keystores').items():
+        for env, content in self.export_data['envConfig'].items():  # noqa
+            for keystore, keystore_content in content.get('keystores').items():  # noqa
                 if keystore_content.get('alias_data'):
-                    for alias, alias_content in keystore_content.get('alias_data').items():
+                    for alias, alias_content in keystore_content.get('alias_data').items():  # noqa
                         col = 0
                         aliasesWithPrivateKeys.write(row, col, self.orgName)
                         col += 1
@@ -843,7 +868,7 @@ class QualificationReport():
                         col += 1
                         if alias_content.get('keyName'):
                             aliasesWithPrivateKeys.write(
-                                row, col, alias_content.get('keyName'), self.danger_format)
+                                row, col, alias_content.get('keyName'), self.danger_format)  # noqa
                         row += 1
         aliasesWithPrivateKeys.autofit()
         # Info block
@@ -853,7 +878,7 @@ class QualificationReport():
     def sharded_proxies(self):
         logger.info(
             '------------------- Sharded Proxies -----------------------')
-        ShardedProxies = self.workbook.add_worksheet(name='Sharded Proxies')
+        ShardedProxies = self.workbook.add_worksheet(name='Sharded Proxies')  # noqa
 
         # Headings
         self.qualification_report_heading(
@@ -870,7 +895,7 @@ class QualificationReport():
                 col += 1
                 ShardedProxies.write(row, col, proxy)
                 col += 1
-                ShardedProxies.write(row, col, '\n'.join(sharded_proxies_list))
+                ShardedProxies.write(row, col, '\n'.join(sharded_proxies_list))  # noqa
                 row += 1
 
         ShardedProxies.autofit()
@@ -878,10 +903,10 @@ class QualificationReport():
         self.qualification_report_info_box(sharded_proxies, ShardedProxies)
 
     def validation_report(self):
-        logger.info('------------------- Validation Report -----------------------')
+        logger.info('------------------- Validation Report -----------------------')  # noqa
 
-        ValidationReportSheet = self.workbook.add_worksheet(name='Validation Report')
-        self.qualification_report_heading(validation_report["headers"], ValidationReportSheet)
+        ValidationReportSheet = self.workbook.add_worksheet(name='Validation Report')  # noqa
+        self.qualification_report_heading(validation_report["headers"], ValidationReportSheet)  # noqa
 
         row = 1
         for key, value in self.export_data['validation_report'].items():
@@ -891,29 +916,27 @@ class QualificationReport():
             ValidationReportSheet.write(row, col, key)
 
             for values in value:
-                col=1
+                col = 1
                 ValidationReportSheet.write(row, col, values['name'])
                 col += 1
                 if values['importable']:
                     ValidationReportSheet.write(row, col, values['importable'])
                 if not values['importable']:
-                    ValidationReportSheet.write(row, col, values['importable'], self.danger_format)
+                    ValidationReportSheet.write(row, col, values['importable'], self.danger_format)  # noqa
                     col += 1
-                    reason_str={}
+                    reason_str = {}
 
                     for reason in values['reason']:
                         if reason.get('violations'):
-                            reason_str['violations']= reason['violations']
+                            reason_str['violations'] = reason['violations']
 
-                    ValidationReportSheet.write(row, col, json.dumps(reason_str, indent=2))
+                    ValidationReportSheet.write(row, col, json.dumps(reason_str, indent=2))  # noqa
                 row += 1
         ValidationReportSheet.autofit()
 
-
     def report_org_resourcefiles(self):
-
         logger.info(
-            '------------------- Org level Resourcefiles -----------------------')
+            '------------------- Org level Resourcefiles -----------------------')  # noqa
         OrgResourcefilesSheet = self.workbook.add_worksheet(
             name='Org Level Resourcefiles')
 
@@ -923,7 +946,7 @@ class QualificationReport():
 
         row = 1
 
-        for key, value in self.export_data['orgConfig']["resourcefiles"].items():
+        for key, value in self.export_data['orgConfig']["resourcefiles"].items():  # noqa
             col = 0
             OrgResourcefilesSheet.write(row, col, self.orgName)
             col += 1
@@ -938,13 +961,13 @@ class QualificationReport():
     def report_network_topology(self):
         # Worksheet 16 - [Apigee OPDK/Edge (4G) components]
         logger.info(
-            '------------------- Apigee OPDK/Edge (4G) components -----------------------')
+            '------------------- Apigee OPDK/Edge (4G) components -----------------------')  # noqa
         topologyInstallationSheet = self.workbook.add_worksheet(
             name='Apigee (4G) components')
 
         # Headings
         self.qualification_report_heading(
-            topology_installation_mapping["headers"], topologyInstallationSheet)
+            topology_installation_mapping["headers"], topologyInstallationSheet)  # noqa
 
         row = 1
 
@@ -953,7 +976,7 @@ class QualificationReport():
 
                 for pod in self.topology_mapping['data_center_mapping'][dc]:
 
-                    for pod_instance in self.topology_mapping['data_center_mapping'][dc][pod]:
+                    for pod_instance in self.topology_mapping['data_center_mapping'][dc][pod]:  # noqa
                         col = 0
                         topologyInstallationSheet.write(row, col, dc)
                         col += 1
@@ -964,7 +987,7 @@ class QualificationReport():
                             row, col, '\n'.join(pod_instance['type']))
                         col += 1
 
-                        for col_key_map in topology_installation_mapping["key_mapping"]:
+                        for col_key_map in topology_installation_mapping["key_mapping"]:  # noqa
                             topologyInstallationSheet.write(
                                 row, col, pod_instance[col_key_map])
                             col += 1
@@ -976,7 +999,7 @@ class QualificationReport():
 
         # Worksheet 15 - [Qualification Summary]
         logger.info(
-            '------------------- Qualification Summary -----------------------')
+            '------------------- Qualification Summary -----------------------')  # noqa
         qualificationSummarySheet = self.workbook.add_worksheet(
             name='Qualification Summary')
 
@@ -984,38 +1007,38 @@ class QualificationReport():
         qualificationSummarySheet.set_column(
             col, col+1, int(report_summary["col_width"])+1)
         qualificationSummarySheet.merge_range(
-            f'A{report_summary["header_row"]}:B{report_summary["header_row"]}', report_summary["header_text"], self.summary_main_header_format)
+            f'A{report_summary["header_row"]}:B{report_summary["header_row"]}', report_summary["header_text"], self.summary_main_header_format)  # noqa
 
         row = report_summary["header_row"]+1
 
         for block in report_summary["blocks"]:
 
-            if "APIGEE_SOURCE" in block and self.cfg.get('inputs', 'SOURCE_APIGEE_VERSION') != block["APIGEE_SOURCE"]:
+            if "APIGEE_SOURCE" in block and self.cfg.get('inputs', 'SOURCE_APIGEE_VERSION') != block["APIGEE_SOURCE"]:  # noqa
                 break
 
             qualificationSummarySheet.merge_range(
-                f'A{row}:B{row}', block["header"], self.summary_block_header_format)
+                f'A{row}:B{row}', block["header"], self.summary_block_header_format)  # noqa
             row = row+1
 
             col = 0
             for row_sheet in block["sheets"]:
                 if ("link_of_text" in row_sheet):
                     qualificationSummarySheet.write_url(
-                        f'A{row}', row_sheet["link_of_text"], self.summary_link_format, string=row_sheet["text_col"])
+                        f'A{row}', row_sheet["link_of_text"], self.summary_link_format, string=row_sheet["text_col"])  # noqa
                 else:
                     qualificationSummarySheet.write(
                         row-1, col, row_sheet["text_col"], self.summary_format)
 
                 qualificationSummarySheet.write_formula(
-                    f'B{row}', row_sheet["result_col"], cell_format=self.summary_format)
+                    f'B{row}', row_sheet["result_col"], cell_format=self.summary_format)  # noqa
 
-                qualificationSummarySheet.conditional_format(f'B{row}:B{row}', {
+                qualificationSummarySheet.conditional_format(f'B{row}:B{row}', {  # noqa
                     'type': 'text',
                     'criteria': 'containing',
                     'value': 'PASSED',
                     'format': self.summary_cell_green_format
                 })
-                qualificationSummarySheet.conditional_format(f'B{row}:B{row}', {
+                qualificationSummarySheet.conditional_format(f'B{row}:B{row}', {  # noqa
                     'type': 'text',
                     'criteria': 'containing',
                     'value': 'FAILED',
@@ -1031,10 +1054,10 @@ class QualificationReport():
         for note in report_summary["note_list"]["notes"]:
             if (note["bg_color"] == "blue"):
                 qualificationSummarySheet.merge_range(
-                    f'A{row}:B{row}', note["text"], self.summary_note_blue_format)
+                    f'A{row}:B{row}', note["text"], self.summary_note_blue_format)  # noqa
             else:
                 qualificationSummarySheet.merge_range(
-                    f'A{row}:B{row}', note["text"], self.summary_note_green_format)
+                    f'A{row}:B{row}', note["text"], self.summary_note_green_format)  # noqa
             row = row+1
 
     def reverse_sheets(self):

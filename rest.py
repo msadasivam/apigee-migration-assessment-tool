@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,11 +45,11 @@ class RestClient(object):
         self.session.verify = ssl_verify
         if auth_type not in self._ALLOWED_AUTH_TYPES:
             raise ValueError(
-                f'Unknown Auth type , Allowed types are {" ,".join(self._ALLOWED_AUTH_TYPES)}')
+                f'Unknown Auth type , Allowed types are {" ,".join(self._ALLOWED_AUTH_TYPES)}')  # noqa
         self.auth_type = auth_type
 
         self.base_headers = {
-            'Authorization': f'Basic {token}' if auth_type == 'basic' else f'Bearer {token}'
+            'Authorization': f'Basic {token}' if auth_type == 'basic' else f'Bearer {token}'  # noqa
         }
 
     def get(self, url, params=None):
@@ -96,7 +96,7 @@ class RestClient(object):
 
     def delete(self, url, params=None):
         headers = self.base_headers.copy()
-        response = self.session.delete(url, headers=headers, params=params or {})
+        response = self.session.delete(url, headers=headers, params=params or {})  # noqa
         logger.debug(f"Response: {response.content}")
         return self._process_response(response)
 
@@ -132,7 +132,7 @@ class Response(object):
     def _is_error(self):
         return self._status_code is None  # or self._status_code >= 400
 
-    # Adding these methods to force implementation in subclasses because they are references in this parent class
+    # Adding these methods to force implementation in subclasses because they are references in this parent class  # noqa
     def _error_code(self):
         raise NotImplementedError
 

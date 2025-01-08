@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ def proxy_unifier(proxy_dir_name):
         inputs_cfg = utils.parse_config('input.properties')
 
         cfg = utils.parse_config('backend.properties')
-        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"
-        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"
-        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"
+        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"  # noqa
+        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"  # noqa
+        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"  # noqa
 
         export_debug_file = cfg.getboolean('unifier', 'debug')
 
@@ -54,7 +54,7 @@ def proxy_unifier(proxy_dir_name):
 
         path_group_map = {}
         for each_api, each_api_info in processed_dict.items():
-            path_group_map[each_api] = utils.get_api_path_groups(each_api_info)
+            path_group_map[each_api] = utils.get_api_path_groups(each_api_info)  # noqa
 
         grouped_apis = {}
         for each_api, base_path_info in path_group_map.items():
@@ -115,6 +115,6 @@ def proxy_unifier(proxy_dir_name):
 
     except Exception as error:
         logger.error(
-            f"ERROR : Some error occured in unifier module. ERROR-INFO - {error}")
+            f"ERROR : Some error occured in unifier module. ERROR-INFO - {error}")  # noqa
     finally:
         return merged_objects
