@@ -15,22 +15,23 @@
 # limitations under the License
 
 FROM python:3.11-alpine
-
 # Create a directory to hold the persistent data
 WORKDIR /app
 
 # Copy the requirements file
 COPY requirements.txt requirements.txt
 
-# Install dependencies
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
-
-# Install additional dependencies (if needed)
-RUN apk add --no-cache graphviz
+# Install additional dependencies
+RUN useradd -m apigee && apk add --no-cache graphviz==12.2.1-r0 && \
+        python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
 
+USER apigee
+
+HEALTHCHECK \
+    CMD python -c 'print()'
+
 # Set the entrypoint to execute the Python script
 ENTRYPOINT ["python3", "main.py"]
-

@@ -19,7 +19,7 @@ for Apigee migration assessment.
 """
 
 import json
-import xlsxwriter
+import xlsxwriter  # pylint: disable=E0401
 from qualification_report_mapping.header_mapping import (
     topology_installation_mapping, proxies_per_env_mapping,
     northbound_mtls_mapping, company_and_developers_mapping,

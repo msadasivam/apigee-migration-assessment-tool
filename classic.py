@@ -24,7 +24,7 @@ and their configurations. It handles pagination for certain
 entity types and allows exporting API proxy bundles.
 """
 
-from requests.utils import quote as urlencode
+from requests.utils import quote as urlencode  # pylint: disable=E0401
 from rest import RestClient
 
 

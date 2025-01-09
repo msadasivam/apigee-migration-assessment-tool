@@ -29,8 +29,8 @@ Pythonic interface.
 """
 
 import json
-import requests
-from urllib3.exceptions import InsecureRequestWarning
+import requests  # pylint: disable=E0401
+from urllib3.exceptions import InsecureRequestWarning  # pylint: disable=E0401
 from base_logger import logger, EXEC_INFO
 
 # Suppress the warnings from urllib3

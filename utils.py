@@ -33,8 +33,8 @@ import configparser
 import concurrent.futures
 from time import sleep
 import zipfile
-import requests
-import xmltodict
+import requests  # pylint: disable=E0401
+import xmltodict  # pylint: disable=E0401
 from base_logger import logger, EXEC_INFO
 
 

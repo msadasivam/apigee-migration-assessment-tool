@@ -60,8 +60,11 @@ class ApigeeTopology():
 
         if not os.path.isdir(self.topology_dir_path):
             os.makedirs(self.topology_dir_path)
-
-        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type)  # noqa pylint: disable=E1120
+        try:
+            ssl_verification = cfg.getboolean('inputs', 'SSL_VERIFICATION')
+        except ValueError:
+            ssl_verification = True
+        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type, ssl_verification)  # noqa pylint: disable=C0301
 
     def get_topology_mapping(self):
         """Retrieves and maps Apigee topology components.
