@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 # Copyright 2025 Google LLC
 #
@@ -16,19 +15,24 @@
 
 FROM python:3.11-alpine
 # Create a directory to hold the persistent data
+
+RUN addgroup -S apigee && \
+    adduser -S apigee -G apigee && \
+    mkdir -p /app && \
+    chown apigee:apigee /app && \
+    apk add --no-cache graphviz=9.0.0-r1
+
+USER apigee
+
 WORKDIR /app
 
 # Copy the requirements file
 COPY requirements.txt requirements.txt
 
-# Install additional dependencies
-RUN useradd -m apigee && apk add --no-cache graphviz==12.2.1-r0 && \
-        python3 -m pip install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
-
-USER apigee
 
 HEALTHCHECK \
     CMD python -c 'print()'
