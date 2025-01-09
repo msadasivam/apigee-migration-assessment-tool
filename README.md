@@ -1,5 +1,7 @@
 # Apigee Migration Assessment Tool
 
+[![Build Status](https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml)
+
 This repository houses the Apigee Migration Assessment tool, a Python-developed utility. The tool evaluates a source Apigee 4G environment (Edge OPDK or Edge SaaS) and generates a report to aid in planning your migration to Apigee 5G (Apigee X or Apigee Hybrid).
 
 # Pre-requisites
