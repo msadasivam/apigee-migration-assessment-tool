@@ -1,0 +1,62 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+name: Build and Run Apigee Migration Assessment Image
+
+on:  # yamllint disable-line rule:truthy
+  push:
+  pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
+jobs:
+  build_and_run_tool:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_PROVIDER_NAME }}
+          service_account: ${{ secrets.SVC_ACCOUNT_EMAIL }}
+          export_environment_variables: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t apigee-migration-assessment-tool:latest .
+
+      - name: Fetch input.properties
+        run: |
+            echo ${{ secrets.OPDK_INPUT_PROPERTIES }} | base64 -d > ${{ github.workspace }}/input.properties
+
+      - name: Run Docker container
+        run: |
+          docker run \
+            -v ${{ github.workspace }}/input.properties:/app/input.properties \
+            -e "SOURCE_AUTH_TOKEN=${{ secrets.APIGEE_OPDK_TOKEN }}" \
+            -e "APIGEE_ACCESS_TOKEN=${{ steps.auth.outputs.access_token }}" \
+            apigee-migration-assessment-tool:latest \
+            --resources all

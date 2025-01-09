@@ -20,7 +20,7 @@ RUN addgroup -S apigee && \
     adduser -S apigee -G apigee && \
     mkdir -p /app && \
     chown apigee:apigee /app && \
-    apk add --no-cache graphviz=9.0.0-r1
+    apk add --no-cache graphviz=12.2.0-r0
 
 USER apigee
 
