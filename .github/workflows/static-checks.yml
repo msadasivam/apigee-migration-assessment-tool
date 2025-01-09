@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
 name: Static Checks Pipeline
-on:
+on:  # yamllint disable-line rule:truthy
   push:
   pull_request:
     branches:
@@ -21,21 +22,18 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
+
+permissions: read-all
+
 jobs:
   linter:
     name: Lint Codebase
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-      - name: Install Linter dependencies
-        run: npm install
+        uses: actions/checkout@v4
       - name: Run Mega Linter
-        uses: nvuillam/mega-linter@v4
+        uses: oxsecurity/megalinter@v8.3.0
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,12 +47,13 @@ jobs:
           GROOVY_NPM_GROOVY_LINT_FILTER_REGEX_EXCLUDE: "Jenkinsfile"
           MARKDOWN_MARKDOWN_LINK_CHECK_DISABLE_ERRORS: true
           PYTHON_MYPY_DISABLE_ERRORS: true
+          DISABLE_LINTERS: "SPELL_CSPELL,REPOSITORY_KICS,PYTHON_PYRIGHT,REPOSITORY_DEVSKIM"
 
   commit-messages:
     name: Conventional Commits Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v4

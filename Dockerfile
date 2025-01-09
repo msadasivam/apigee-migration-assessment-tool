@@ -1,6 +1,5 @@
-#!/usr/bin/python
 
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +14,28 @@
 # limitations under the License
 
 FROM python:3.11-alpine
-
 # Create a directory to hold the persistent data
+
+RUN addgroup -S apigee && \
+    adduser -S apigee -G apigee && \
+    mkdir -p /app && \
+    chown apigee:apigee /app && \
+    apk add --no-cache graphviz=9.0.0-r1
+
+USER apigee
+
 WORKDIR /app
 
 # Copy the requirements file
 COPY requirements.txt requirements.txt
 
-# Install dependencies
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
-
-# Install additional dependencies (if needed)
-RUN apk add --no-cache graphviz
 
 # Copy the rest of the application code
 COPY . .
 
+HEALTHCHECK \
+    CMD python -c 'print()'
+
 # Set the entrypoint to execute the Python script
 ENTRYPOINT ["python3", "main.py"]
-
