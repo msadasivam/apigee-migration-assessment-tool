@@ -439,7 +439,7 @@ def get_proxy_entrypoint(dir_name):
 
                 ent.append(eachfile)
         if len(ent) == 1:
-            return os.path.join(dir, ent[0])
+            return os.path.join(dir_name, ent[0])
         if len(ent) > 1:
             logger.error(  # noqa pylint: disable=W1203
                 f"ERROR: Directory \"{dir_name}\" contains multiple xml files at root")  # noqa
