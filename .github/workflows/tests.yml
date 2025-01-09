@@ -17,6 +17,8 @@ name: Build and Run Apigee Migration Assessment Image
 
 on:  # yamllint disable-line rule:truthy
   push:
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches:
       - main
