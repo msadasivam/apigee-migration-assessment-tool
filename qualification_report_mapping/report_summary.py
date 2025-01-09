@@ -14,7 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from utils import parse_json
+"""Loads the report summary mapping from a JSON file.
+
+This module parses the `report_summary.json` file and stores the mapping
+in the `report_summary` variable.  The `parse_json` utility function
+is used to perform the parsing.
+"""
+
+
+from utils import parse_json  # pylint: disable=E0401
 
 report_summary = parse_json(
     "./qualification_report_mapping_json/report_summary.json")

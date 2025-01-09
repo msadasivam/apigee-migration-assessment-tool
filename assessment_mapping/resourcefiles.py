@@ -14,7 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from utils import parse_json
+"""Loads the resource files mapping from a JSON file.
+
+This module parses the `resourcefiles.json` file and stores the mapping
+in the `resourcefiles_mapping` variable.  The `parse_json` utility function
+is used to perform the parsing.
+"""
+
+from utils import parse_json  # pylint: disable=E0401
 
 resourcefiles_mapping = parse_json(
     "./assessment_mapping_json/resourcefiles.json")

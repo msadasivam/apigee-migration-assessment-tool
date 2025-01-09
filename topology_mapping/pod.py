@@ -14,7 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from utils import parse_json
+"""Loads the pod mapping from a JSON file.
+
+This module parses the `pod.json` file and stores the mapping
+in the `pod_mapping` variable. The `parse_json` utility function
+is used to perform the parsing.
+"""
+
+from utils import parse_json  # pylint: disable=E0401
 
 pod_mapping = parse_json(
     "./topology_mapping_json/pod.json")

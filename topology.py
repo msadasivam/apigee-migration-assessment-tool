@@ -14,35 +14,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+"""Generates and visualizes Apigee topology diagrams.
+
+This module interacts with the Apigee Management API to retrieve topology
+information, including pod and component details.
+It then processes this information to create data center mappings and
+generates visual representations of the topology using diagrams.
+"""
+import os
+from diagrams import Diagram, Cluster  # noqa pylint: disable=E0401
+from diagrams.generic.blank import Blank  # noqa pylint: disable=E0401
 from classic import ApigeeClassic
 from topology_mapping.pod import pod_mapping
 from utils import write_json
-from diagrams import Diagram, Cluster
-from diagrams.generic.blank import Blank
-import os
 from base_logger import logger
 
 
 class ApigeeTopology():
+    """Represents and visualizes Apigee topology.
 
-    def __init__(self, baseurl, org, token, auth_type, cfg):
+    Retrieves topology information from Apigee, creates data center
+    mappings, and generates topology diagrams.
+    """
+
+    def __init__(self, baseurl, org, token, auth_type, cfg):  # noqa pylint: disable=R0913,R0917
+        """Initializes ApigeeTopology.
+
+        Args:
+            baseurl (str): The base URL for the Apigee Management API.
+            org (str): The Apigee organization name.
+            token (str): The authentication token.
+            auth_type (str): The authentication type.
+            cfg (configparser.ConfigParser): The configuration object.
+        """
         self.baseurl = baseurl
         self.org = org
         self.token = token
         self.auth_type = auth_type
         self.cfg = cfg
 
-        TARGET_DIR = self.cfg.get('inputs', 'TARGET_DIR')
-        TOPOLOGY_DIR = self.cfg.get('topology', 'TOPOLOGY_DIR')
+        target_dir = self.cfg.get('inputs', 'TARGET_DIR')
+        topology_dir = self.cfg.get('topology', 'TOPOLOGY_DIR')
 
-        self.topology_dir_path = f"{TARGET_DIR}/{TOPOLOGY_DIR}"
+        self.topology_dir_path = f"{target_dir}/{topology_dir}"
 
         if not os.path.isdir(self.topology_dir_path):
             os.makedirs(self.topology_dir_path)
 
-        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type)
+        self.opdk = ApigeeClassic(baseurl, org, token, self.auth_type)  # noqa pylint: disable=E1120
 
     def get_topology_mapping(self):
+        """Retrieves and maps Apigee topology components.
+
+        Retrieves pod and component details from the Apigee Management API
+            and creates a mapping.
+
+        Returns:
+            dict: A dictionary containing the topology mapping.
+        """
 
         logger.info('In get APIGEE edge network topology mapping')
         pod_component_result = {}
@@ -53,9 +82,9 @@ class ApigeeTopology():
 
             for result in result_arr:
                 component_type_resp.append({
-                    "externalHostName": result["externalHostName"] if "externalHostName" in result else "",  # noqa
+                    "externalHostName": result["externalHostName"] if "externalHostName" in result else "",  # noqa pylint: disable=C0301
                     "externalIP": result["externalIP"] if "externalIP" in result else "",  # noqa
-                    "internalHostName": result["internalHostName"] if "internalHostName" in result else "",  # noqa
+                    "internalHostName": result["internalHostName"] if "internalHostName" in result else "",  # noqa pylint: disable=C0301
                     "internalIP": result["internalIP"] if "internalIP" in result else "",  # noqa
                     "isUp": result["isUp"] if "isUp" in result else "",
                     "pod": result["pod"] if "pod" in result else "",
@@ -66,13 +95,23 @@ class ApigeeTopology():
 
             pod_component_result[f'{pod_name}'] = component_type_resp
 
-        NW_TOPOLOGY_MAPPING = self.cfg.get('topology', 'NW_TOPOLOGY_MAPPING')  # noqa
+        nw_toplogy_mapping = self.cfg.get('topology', 'NW_TOPOLOGY_MAPPING')  # noqa
         write_json(
-            f"{self.topology_dir_path}/{NW_TOPOLOGY_MAPPING}", pod_component_result)  # noqa
+            f"{self.topology_dir_path}/{nw_toplogy_mapping}", pod_component_result)  # noqa
 
         return pod_component_result
 
     def get_data_center_mapping(self, pod_component_mapping):
+        """Creates a data center mapping from pod component information.
+
+        Processes the pod component mapping to create a data center mapping.
+
+        Args:
+            pod_component_mapping (dict): The pod component mapping.
+
+        Returns:
+            dict: A dictionary containing the data center mapping.
+        """
 
         logger.info('In get data center mapping from network topology mapping')  # noqa
         data_center = {}
@@ -83,20 +122,28 @@ class ApigeeTopology():
                 if component_instance['region'] not in data_center:
                     data_center[component_instance['region']] = {}
 
-                if component_instance['pod'] not in data_center[component_instance['region']]:  # noqa
+                if component_instance['pod'] not in data_center[component_instance['region']]:  # noqa pylint: disable=C0301
                     data_center[component_instance['region']
                                 ][component_instance['pod']] = []
 
-                data_center[component_instance['region']][component_instance['pod']].append(  # noqa
+                data_center[component_instance['region']][component_instance['pod']].append(  # noqa pylint: disable=C0301
                     component_instance)
 
-        DATA_CENTER_MAPPING = self.cfg.get('topology', 'DATA_CENTER_MAPPING')  # noqa
+        datacenter_mapping = self.cfg.get('topology', 'DATA_CENTER_MAPPING')  # noqa
         write_json(
-            f'{self.topology_dir_path}/{DATA_CENTER_MAPPING}', data_center)  # noqa
+            f'{self.topology_dir_path}/{datacenter_mapping}', data_center)  # noqa
 
         return data_center
 
-    def draw_topology_graph_diagram(self, data_center):
+    def draw_topology_graph_diagram(self, data_center):  # noqa pylint: disable=R0914,R0912
+        """Draws a topology graph diagram.
+
+        Generates a visual representation of the Apigee topology
+        using diagrams.
+
+        Args:
+            data_center (dict): The data center mapping.
+        """
 
         logger.info('Draw network topology mapping graph diagram')
         main_graph_attr = {
@@ -119,44 +166,44 @@ class ApigeeTopology():
             "nodesep": "1",
             "fontsize": "25",
         }
-        with Diagram(f"Edge Installation Topology with Pod and IP Clustering", filename=f"{self.topology_dir_path}/Edge_Installation_Topology_With_Pod_IPs", show=False, graph_attr=main_graph_attr, node_attr=main_graph_attr, outformat=["png"]):  # noqa
+        with Diagram("Edge Installation Topology with Pod and IP Clustering", filename=f"{self.topology_dir_path}/Edge_Installation_Topology_With_Pod_IPs", show=False, graph_attr=main_graph_attr, node_attr=main_graph_attr, outformat=["png"]):  # noqa pylint: disable=C0301
+            internal_ip_clusters = {}
             for dc in data_center:
                 with Cluster(dc, graph_attr=data_center_attr):
                     for pod in data_center[dc]:
                         with Cluster(pod, graph_attr=pod_attr):
-                            internalIPClusters = {}
                             for pod_instance in data_center[dc][pod]:
-                                if not pod_instance['internalIP'] in internalIPClusters:  # noqa
-                                    internalIPClusters[pod_instance['internalIP']] = [  # noqa
+                                if not pod_instance['internalIP'] in internal_ip_clusters:  # noqa
+                                    internal_ip_clusters[pod_instance['internalIP']] = [  # noqa
                                     ]
-                                internalIPClusters[pod_instance['internalIP']].append(  # noqa
+                                internal_ip_clusters[pod_instance['internalIP']].append(  # noqa
                                     pod_instance)
 
                             svc_group = []
-                            for internalIPGrp in internalIPClusters:
+                            for ip_grp, ip_grp_value in internal_ip_clusters.items():       # noqa pylint: disable=C0301
                                 ip_attr['bgcolor'] = pod_mapping[pod]["bgcolor"]  # noqa
-                                with Cluster(internalIPGrp, graph_attr=ip_attr):  # noqa
-                                    for internalIP in internalIPClusters[internalIPGrp]:  # noqa
-                                        for component in internalIP['type']:  # noqa
+                                with Cluster(ip_grp, graph_attr=ip_attr):  # noqa
+                                    for int_ip in ip_grp_value:  # noqa
+                                        for component in int_ip['type']:  # noqa
                                             svc_group.append(
-                                                Blank(f"{component}", height="0.0001", width="20", fontsize="35"))  # noqa
+                                                Blank(f"{component}", height="0.0001", width="20", fontsize="35"))    # noqa pylint: disable=C0301
 
-        with Diagram(f"Edge Installation Topology with IPs Clustering", filename=f"{self.topology_dir_path}/Edge_Installation_Topology_With_IPs", show=False, graph_attr=main_graph_attr, node_attr=main_graph_attr, outformat=["png"]):  # noqa
-            internalIPClusters = {}
+        with Diagram("Edge Installation Topology with IPs Clustering", filename=f"{self.topology_dir_path}/Edge_Installation_Topology_With_IPs", show=False, graph_attr=main_graph_attr, node_attr=main_graph_attr, outformat=["png"]):  # noqa pylint: disable=C0301
+            internal_ip_clusters = {}
             for dc in data_center:
                 with Cluster(dc, graph_attr=data_center_attr):
                     for pod in data_center[dc]:
                         for pod_instance in data_center[dc][pod]:
-                            if not pod_instance['internalIP'] in internalIPClusters:  # noqa
-                                internalIPClusters[pod_instance['internalIP']] = [  # noqa
+                            if not pod_instance['internalIP'] in internal_ip_clusters:  # noqa
+                                internal_ip_clusters[pod_instance['internalIP']] = [  # noqa
                                 ]
-                            internalIPClusters[pod_instance['internalIP']].append(  # noqa
+                            internal_ip_clusters[pod_instance['internalIP']].append(  # noqa
                                 pod_instance)
 
                     svc_group = []
-                    for internalIPGrp in internalIPClusters:
-                        with Cluster(internalIPGrp, graph_attr=ip_attr):
-                            for internalIP in internalIPClusters[internalIPGrp]:  # noqa
-                                for component in internalIP['type']:
+                    for ip_grp, ip_grp_value in internal_ip_clusters.items():
+                        with Cluster(ip_grp, graph_attr=ip_attr):
+                            for int_ip in ip_grp_value:  # noqa
+                                for component in int_ip['type']:
                                     svc_group.append(
-                                        Blank(f"{component}", height="0.0001", width="20", fontsize="35"))  # noqa
+                                        Blank(f"{component}", height="0.0001", width="20", fontsize="35"))  # noqa pylint: disable=C0301

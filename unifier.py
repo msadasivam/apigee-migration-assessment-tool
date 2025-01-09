@@ -14,20 +14,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Handles proxy unification and splitting logic.
+
+This module provides functionalities for
+unifying and splitting Apigee proxies based on
+configuration and path analysis. It processes
+proxy artifacts, analyzes their dependencies,
+and generates modified proxy bundles.
+"""
+
 import utils  # pylint: disable=import-error
 from base_logger import logger
 
 DEFAULT_GCP_ENV_TYPE = 'BASE'
 
 
-def proxy_unifier(proxy_dir_name):
+def proxy_unifier(proxy_dir_name):  # noqa pylint: disable=R0914
+    """Unifies and splits proxies based on path analysis.
+
+    Processes proxy artifacts, analyzes
+    dependencies, and generates modified proxy
+    bundles based on path grouping and
+    configuration.
+
+    Args:
+        proxy_dir_name (str): The name of the
+            proxy directory.
+
+    Returns:
+        dict: A dictionary containing merged
+            proxy objects information.
+    """
     try:
         inputs_cfg = utils.parse_config('input.properties')
 
         cfg = utils.parse_config('backend.properties')
-        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"  # noqa
-        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"  # noqa
-        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"  # noqa
+        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"  # noqa pylint: disable=C0301
+        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"  # noqa pylint: disable=C0301
+        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"  # noqa pylint: disable=C0301
 
         export_debug_file = cfg.getboolean('unifier', 'debug')
 
@@ -81,13 +105,13 @@ def proxy_unifier(proxy_dir_name):
                         each_path,
                         pes
                     )
-                    merged_objects[f"{each_api}_{index}"]['Name'] = f"{final_dict[each_api]['proxyName']}_{index}"  # noqa
+                    merged_objects[f"{each_api}_{index}"]['Name'] = f"{final_dict[each_api]['proxyName']}_{index}"  # noqa pylint: disable=C0301
                     merged_objects[f"{each_api}_{index}"]['Policies'].extend(  # noqa
-                        [item for pe in pes for item in processed_dict[each_api][pe]['Policies']])  # noqa
+                        [item for pe in pes for item in processed_dict[each_api][pe]['Policies']])   # noqa pylint: disable=C0301
                     merged_objects[f"{each_api}_{index}"]['TargetEndpoints'].extend(  # noqa
-                        [item for pe in pes for item in processed_dict[each_api][pe]['TargetEndpoints']])  # noqa
-                    merged_objects[f"{each_api}_{index}"]['Policies'] = list(set(merged_objects[f"{each_api}_{index}"]['Policies']))  # noqa
-                    merged_objects[f"{each_api}_{index}"]['TargetEndpoints'] = list(set(merged_objects[f"{each_api}_{index}"]['TargetEndpoints']))  # noqa
+                        [item for pe in pes for item in processed_dict[each_api][pe]['TargetEndpoints']])  # noqa pylint: disable=C0301
+                    merged_objects[f"{each_api}_{index}"]['Policies'] = list(set(merged_objects[f"{each_api}_{index}"]['Policies']))  # noqa pylint: disable=C0301
+                    merged_objects[f"{each_api}_{index}"]['TargetEndpoints'] = list(set(merged_objects[f"{each_api}_{index}"]['TargetEndpoints']))  # noqa pylint: disable=C0301
                     merged_objects[f"{each_api}_{index}"]['ProxyEndpoints'].append(each_pe)  # noqa
 
         for each_api, grouped_api in bundled_group.items():
@@ -113,8 +137,7 @@ def proxy_unifier(proxy_dir_name):
         if export_debug_file:
             utils.export_debug_log(files)
 
-    except Exception as error:
-        logger.error(
-            f"ERROR : Some error occured in unifier module. ERROR-INFO - {error}")  # noqa
-    finally:
-        return merged_objects
+    except Exception as error:  # noqa pylint: disable=W0718
+        logger.error(  # noqa pylint: disable=W1203
+            f"ERROR : Some error occured in unifier module. ERROR-INFO - {error}")  # noqa pylint: disable=W1203
+    return merged_objects

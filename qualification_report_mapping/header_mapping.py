@@ -14,7 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from utils import parse_json
+"""Loads mappings for the qualification report from JSON files.
+
+This module parses various JSON files containing mappings
+and data used to generate the qualification report. The parsed data
+is stored in individual variables, making it accessible for
+report generation. The `parse_json` utility function is used for
+parsing the JSON data.
+"""
+
+from utils import parse_json  # pylint: disable=E0401
 
 
 topology_installation_mapping = parse_json(

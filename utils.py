@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python      # noqa pylint: disable=C0302
 
 # Copyright 2025 Google LLC
 #
@@ -14,167 +14,306 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+"""Utilities for Apigee proxy analysis and \
+manipulation.
+
+This module provides helper functions for \
+parsing configurations,
+managing files and directories, processing \
+proxy artifacts,
+and handling parallel execution.
+"""
 import os
 import sys
 import csv
 import json
 import shutil
-import zipfile
-import requests
-import xmltodict
 import hashlib
 import configparser
 import concurrent.futures
 from time import sleep
+import zipfile
+import requests
+import xmltodict
 from base_logger import logger, EXEC_INFO
 
 
 def parse_config(config_file):
+    """Parses a configuration file.
+
+    Args:
+        config_file: The path to the \
+        configuration file.
+
+    Returns:
+        A ConfigParser object.
+    """
     config = configparser.ConfigParser()
     config.read(config_file)
     return config
 
 
 def get_env_variable(key):
+    """Retrieves the value of an \
+    environment variable.
+
+    Args:
+        key: The name of the environment \
+        variable.
+
+    Returns:
+        The value of the environment \
+        variable, or None
+        if it is not set.
+    """
     if key is not None:
         value = os.getenv(key)
         if value is not None:
             return value
-        else:
-            return None
+    return None
 
 
 def is_token_valid(token):
+    """Checks if an access token is valid.
+
+    Args:
+        token: The access token to validate.
+
+    Returns:
+        True if the token is valid, \
+        False otherwise.
+    """
     url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
-    r = requests.get(url)
+    r = requests.get(url, timeout=5)
     if r.status_code == 200:
         response_json = r.json()
         if 'email' not in response_json:
             response_json['email'] = ''
-        logger.info(f"Token Validated for user {response_json['email']}")
+        logger.info(f"Token Validated for user {response_json['email']}")  # noqa pylint: disable=W1203
         return True
     return False
 
 
 def get_access_token():
+    """Retrieves the Apigee access token.
+
+    Returns:
+        The access token.
+    """
     token = os.getenv('APIGEE_ACCESS_TOKEN')
     if token is not None:
         if is_token_valid(token):
             return token
     logger.error(
-        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! ')  # noqa
+        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! ')   # noqa pylint: disable=C0301
     sys.exit(1)
 
 
 def get_source_auth_token():
+    """Retrieves the source auth \
+    token.
+    Returns:
+        The source auth token.
+    """
     token = os.getenv('SOURCE_AUTH_TOKEN')
     if token is not None:
         return token
     logger.error(
-        "Please run \"export SOURCE_AUTH_TOKEN=`echo -n '<username>:<password>' | base64`\" first!")  # noqa
+        "Please run \"export SOURCE_AUTH_TOKEN=`echo -n '<username>:<password>' | base64`\" first!")   # noqa pylint: disable=C0301
     sys.exit(1)
 
 
-def create_dir(dir):
+def create_dir(dir_name):
+    """Creates a directory if it doesn't \
+    exist.
+
+    Args:
+        dir: The directory path to create.
+    """
     try:
-        os.makedirs(dir)
+        os.makedirs(dir_name)
     except FileExistsError:
-        logger.info(f"Directory \"{dir}\" already exists", exc_info=EXEC_INFO)
+        logger.info(f"Directory \"{dir_name}\" already exists", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
 
 
-def list_dir(dir, isok=False):
+def list_dir(dir_name, isok=False):
+    """Lists the contents of a directory.
+
+    Args:
+        dir: The directory path to list.
+        isok: Whether to ignore \
+        FileNotFoundError.
+
+    Returns:
+        A list of directory contents.
+    """
     try:
-        return os.listdir(dir)
+        return os.listdir(dir_name)
     except FileNotFoundError as error:
-        logger.warn(f"{error}")
+        logger.warning(f"{error}")  # noqa pylint: disable=W1203
         if isok:
-            logger.info(f"Ignoring : Directory \"{dir}\" not found")
+            logger.info(f"Ignoring : Directory \"{dir_name}\" not found")  # noqa pylint: disable=W1203
             return []
-        logger.error(f"Directory \"{dir}\" not found", exc_info=EXEC_INFO)
+        logger.error(f"Directory \"{dir_name}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
         sys.exit(1)
 
 
 def delete_folder(src):
+    """Deletes a folder.
+
+    Args:
+        src: Path to the folder.
+    """
     try:
         shutil.rmtree(src)
     except FileNotFoundError as e:
-        logger.info(f'Ignoring : {e}')
-        return
+        logger.info(f'Ignoring : {e}')  # noqa pylint: disable=W1203
 
 
 def print_json(data):
+    """Prints JSON data.
+
+    Args:
+        data: data to print
+    """
     logger.info(json.dumps(data, indent=2))
 
 
 def parse_json(file):
+    """Parses JSON data from a file.
+
+    Args:
+        file: Path to file
+
+    Returns:
+        Parsed JSON data
+    """
     try:
-        with open(file) as fl:
+        with open(file) as fl:  # noqa pylint: disable=W1514
             doc = json.loads(fl.read())
         return doc
     except FileNotFoundError:
-        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)
+        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
     return {}
 
 
 def write_json(file, data):
+    """Writes JSON data to a file.
+
+    Args:
+        file: The file path to write to.
+        data: The JSON data to write.
+
+    Returns:
+        True if successful, False \
+        otherwise.
+    """
     try:
-        logger.info(f"Writing JSON to File {file}")
-        with open(file, 'w') as fl:
+        logger.info(f"Writing JSON to File {file}")  # noqa pylint: disable=W1203
+        with open(file, 'w') as fl:  # noqa pylint: disable=W1514
             fl.write(json.dumps(data, indent=2))
     except FileNotFoundError:
-        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)
+        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
         return False
     return True
 
 
 def read_file(file_path):
+    """Reads data from a file.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        bytes: The content of the file.
+    """
     try:
         with open(file_path, "rb") as f:
             content = f.read()
         return content
-    except Exception as e:
-        logger.error(f"Couldn't read file {file_path}. ERROR-INFO- {e}")
+    except Exception as e: # noqa pylint: disable=W1203,W0718
+        logger.error(f"Couldn't read file {file_path}. ERROR-INFO- {e}")  # noqa pylint: disable=W1203
+        return None
 
 
 def write_file(file_path, data):
+    """Writes data to a file.
+
+    Args:
+        file_path (str): The path to the file.
+        data (bytes): The data to write.
+    """
     try:
         with open(file_path, "wb") as f:
             f.write(data)
-    except Exception as e:
-        logger.error(f"Couldn't read file {file_path}. ERROR-INFO- {e}")
+    except Exception as e: # noqa pylint: disable=W1203,W0718
+        logger.error(f"Couldn't read file {file_path}. ERROR-INFO- {e}")  # noqa pylint: disable=W1203
 
 
 def compare_hash(data1, data2):
+    """Compares the SHA256 hash of two \
+    data objects.
+
+    Args:
+        data1: The first data object.
+        data2: The second data object.
+
+    Returns:
+        True if the hashes match, \
+        False otherwise.
+    """
     try:
         data1_hash = hashlib.sha256(data1).hexdigest()
         data2_hash = hashlib.sha256(data2).hexdigest()
-        if data1_hash == data2_hash:
-            return True
-        else:
-            return False
-    except Exception as e:
-        logger.error(f"Hashes couldn't be matched. ERROR-INFO- {e}")
+        return bool(data1_hash == data2_hash)
+    except Exception as e: # noqa pylint: disable=W1203,W0718
+        logger.error(f"Hashes couldn't be matched. ERROR-INFO- {e}")  # noqa pylint: disable=W1203
+        return False
 
 
 def get_proxy_endpoint_count(cfg):
+    """Retrieves the proxy endpoint count \
+    from
+
+        configuration.
+
+    Args:
+        cfg: The configuration object.
+
+    Returns:
+        The proxy endpoint count.
+    """
     try:
         proxy_endpoint_count = cfg.getint('unifier', 'proxy_endpoint_count')
         max_proxy_endpoint_count = cfg.getint(
             'inputs', 'MAX_PROXY_ENDPOINT_LIMIT')
-        if not (proxy_endpoint_count > 0 and
-                proxy_endpoint_count <= max_proxy_endpoint_count):
+        if proxy_endpoint_count < 0:
             logger.error(
-                    'ERROR: Proxy Endpoints should be > Zero(0)  &  <=',
+                    'ERROR: Proxy Endpoints should be > Zero(0)')
+            sys.exit(1)
+        if proxy_endpoint_count > max_proxy_endpoint_count:
+            logger.error(
+                    'ERROR: Proxy Endpoints should be > Zero(0)  &  <= %s',
                     max_proxy_endpoint_count)
             sys.exit(1)
     except ValueError:
         logger.error('proxy_endpoint_count should be a Number')
         sys.exit(1)
-
     return proxy_endpoint_count
 
 
 def generate_env_groups_tfvars(project_id, env_config):
+    """Generates Terraform variables for \
+    environment groups.
+
+    Args:
+        project_id: The GCP project ID.
+        env_config: The environment \
+        configuration.
+
+    Returns:
+        A dictionary of Terraform variables.
+    """
     envgroups = {}
     environments = {}
     for env, env_data in env_config.items():
@@ -196,23 +335,41 @@ def generate_env_groups_tfvars(project_id, env_config):
 
 
 def write_csv_report(file_name, header, rows):
-    with open(file_name, 'w', newline='') as file:
+    """Writes data to a CSV file.
+
+    Args:
+        file_name: The name of the CSV file.
+        header: The header row.
+        rows: The data rows.
+    """
+    with open(file_name, 'w', newline='') as file:  # noqa pylint: disable=W1514
         writer = csv.writer(file)
         writer.writerow(header)
         for each_row in rows:
             writer.writerow(each_row)
 
 
-def retry(retries=3, delay=1, backoff=2):  # noqa
+def retry(retries=3, delay=1, backoff=2):  # noqa pylint: disable=W0613
+    """Retry decorator with exponential \
+    backoff.
+
+    Args:
+        retries: Number of retries
+        delay: Initial delay
+        backoff: Backoff multiplier
+
+    Returns:
+        Decorated function
+    """
     def decorator(func):   # noqa
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs): # noqa pylint: disable=R1710
             for attempt in range(retries + 1):
                 try:
                     return func(*args, **kwargs)
-                except Exception as e:
+                except Exception as e: # noqa pylint: disable=W1203,W0718
                     if attempt == retries:
                         raise e
-                    logger.info(f"Retrying {func.__name__} in {delay} seconds... (Attempt {attempt + 1})")  # noqa
+                    logger.info(f"Retrying {func.__name__} in {delay} seconds... (Attempt {attempt + 1})")   # noqa pylint: disable=C0301,W1203
                     sleep(delay)
                     delay *= backoff   # noqa
         return wrapper
@@ -221,39 +378,60 @@ def retry(retries=3, delay=1, backoff=2):  # noqa
 
 def run_parallel(func, args, workers=10,
                  max_retries=3, retry_delay=1):
+    """Runs a function in parallel with \
+    multiple arguments.
+
+    Args:
+        func: Function to execute.
+        args: Arguments for the function.
+        workers: Number of workers.
+        max_retries: Max retry attempts.
+        retry_delay: Retry delay.
+
+    Returns:
+        List of results.
+    """
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:  # noqa
         # Initial futures (future: (arg, retry_count))
         future_to_arg_retry = {executor.submit(func, arg): (arg, 0) for arg in args}  # noqa
 
         data = []
         while future_to_arg_retry:
-            done, _ = concurrent.futures.wait(future_to_arg_retry, return_when=concurrent.futures.FIRST_COMPLETED)  # noqa
-
+            done, _ = concurrent.futures.wait(future_to_arg_retry, return_when=concurrent.futures.FIRST_COMPLETED)   # noqa pylint: disable=C0301
             for future in done:
                 arg, retry_count = future_to_arg_retry.pop(future)
                 try:
                     data.append(future.result())
-                except Exception as exc:  # noqa
+                except Exception as exc:   # noqa pylint: disable=W1203,W0718
                     if retry_count < max_retries:
                         retry_count += 1
-                        logger.warning(
-                            f"Task with arg {arg} failed ({retry_count}/{max_retries} retries), retrying in {retry_delay} seconds...",  # noqa
+                        logger.warning(  # noqa pylint: disable=W1203
+                            f"Task with arg {arg} failed ({retry_count}/{max_retries} retries), retrying in {retry_delay} seconds...",   # noqa pylint: disable=C0301,W1203
                             exc_info=True,
                         )
                         sleep(retry_delay)
-                        future_to_arg_retry[executor.submit(func, arg)] = (arg, retry_count)  # noqa
+                        future_to_arg_retry[executor.submit(func, arg)] = (arg, retry_count)   # noqa pylint: disable=C0301
                     else:
                         data.append("Exception")
-                        logger.error(
-                            f"Task with arg {arg} failed after {max_retries} retries.",  # noqa
+                        logger.error(  # noqa pylint: disable=W1203
+                            f"Task with arg {arg} failed with {exc} after {max_retries} retries.",   # noqa pylint: disable=C0301
                             exc_info=True
                         )
     return data
 
 
-def get_proxy_entrypoint(dir):
+def get_proxy_entrypoint(dir_name):
+    """Gets the proxy entrypoint XML file.
+
+
+    Args:
+        dir: Proxy directory.
+
+    Returns:
+        Path to the entrypoint XML file.
+    """
     try:
-        files = list_dir(dir)
+        files = list_dir(dir_name)
         ent = []
 
         for eachfile in files:
@@ -262,49 +440,75 @@ def get_proxy_entrypoint(dir):
                 ent.append(eachfile)
         if len(ent) == 1:
             return os.path.join(dir, ent[0])
+        if len(ent) > 1:
+            logger.error(  # noqa pylint: disable=W1203
+                f"ERROR: Directory \"{dir_name}\" contains multiple xml files at root")  # noqa
         else:
-            if len(ent) > 1:
-                logger.error(
-                    f"ERROR: Directory \"{dir}\" contains multiple xml files at root")  # noqa
-            else:
-                logger.error(
-                    f"ERROR: Directory \"{dir}\" has no xml file at root")
-    except Exception as error:
-        logger.info(f"INFO: get proxy endpoint module faced a {error}")
-    finally:
-        if len(ent) == 1:
-            return os.path.join(dir, ent[0])
-        else:
-            return None
+            logger.error(  # noqa pylint: disable=W1203
+                f"ERROR: Directory \"{dir_name}\" has no xml file at root")
+    except Exception as error: # noqa pylint: disable=W1203,W0718
+        logger.info(f"INFO: get proxy endpoint module faced a {error}")  # noqa pylint: disable=W1203
+    if len(ent) == 1:
+        return os.path.join(dir_name, ent[0])
+    return None
 
 
 def parse_xml(file):
+    """Parses XML data from a file.
+
+
+    Args:
+        file: Path to XML file.
+
+    Returns:
+        Parsed XML data as a dictionary.
+    """
     try:
-        with open(file) as fl:
+        with open(file) as fl:  # noqa pylint: disable=W1514
             doc = xmltodict.parse(fl.read())
         return doc
     except FileNotFoundError:
-        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)
+        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
     return {}
 
 
-def get_proxy_files(dir, file_type='proxies'):
-    target_dir = os.path.join(dir, file_type)
+def get_proxy_files(dir_name, file_type='proxies'):
+    """Gets proxy files of a specific type.
+
+
+    Args:
+        dir_name: Proxy directory.
+        file_type: Type of proxy files.
+
+    Returns:
+        List of proxy file names \
+        without extension.
+    """
+    target_dir = os.path.join(dir_name, file_type)
     files = list_dir(target_dir)
     xml_files = []
     for eachfile in files:
         if eachfile.endswith(".xml"):
             xml_files.append(os.path.splitext(eachfile)[0])
     if len(xml_files) == 0:
-        logger.error(f"ERROR: Directory \"{target_dir}\" has no xml files")  # noqa
+        logger.error(f"ERROR: Directory \"{target_dir}\" has no xml files")   # noqa pylint: disable=W1203
         return []
-    else:
-        return xml_files
+    return xml_files
 
 
-def parse_proxy_root(dir):
+def parse_proxy_root(dir_name):
+    """Parses the root XML of Apigee proxy.
+
+
+    Args:
+        dir_name: The directory containing \
+        the proxy files.
+
+    Returns:
+        A dictionary representing the parsed XML.
+    """
     try:
-        file = get_proxy_entrypoint(dir)
+        file = get_proxy_entrypoint(dir_name)
         if file is None:
             return {}
         doc = parse_xml(file)
@@ -315,231 +519,296 @@ def parse_proxy_root(dir):
         if len(proxy_endpoints) == 0:
             logger.info('Proceeding with Filesystem parse of ProxyEndpoints')
             doc['APIProxy']['ProxyEndpoints'] = {}
-            proxies = get_proxy_files(dir)
+            proxies = get_proxy_files(dir_name)
             doc['APIProxy']['ProxyEndpoints']['ProxyEndpoint'] = proxies
         else:
             logger.info('Skipping with Filesystem parse of ProxyEndpoints')
         if len(target_endpoints) == 0:
             logger.info('Proceeding with Filesystem parse of TargetEndpoints')
             doc['APIProxy']['TargetEndpoints'] = {}
-            targets = get_proxy_files(dir, 'targets')
+            targets = get_proxy_files(dir_name, 'targets')
             doc['APIProxy']['TargetEndpoints']['TargetEndpoint'] = targets
         else:
             logger.info('Skipping with Filesystem parse of TargetEndpoints')
         if len(policies) == 0:
             logger.info('Proceeding with Filesystem parse of Policies')
             doc['APIProxy']['Policies'] = {}
-            policies_list = get_proxy_files(dir, 'policies')
+            policies_list = get_proxy_files(dir_name, 'policies')
             doc['APIProxy']['Policies']['Policy'] = policies_list
         else:
             logger.info('Skipping with Filesystem parse of Policies')
-    except Exception as error:
-        logger.error(f"raised in parse_proxy_root {error}")
+    except Exception as error: # noqa pylint: disable=W1203,W0718
+        logger.error(f"raised in parse_proxy_root {error}")  # noqa pylint: disable=W1203
     return doc
 
 
-def parse_proxy_root_sharding(dir):
+def parse_proxy_root_sharding(dir_name):
+    """Parses the root XML of Apigee \
+    proxy for sharding.
 
-    file = get_proxy_entrypoint(dir)
+    Args:
+        dir_name: The directory containing \
+        the proxy files.
+
+    Returns:
+        A dictionary representing the \
+        parsed XML.
+    """
+    file = get_proxy_entrypoint(dir_name)
     if file is None:
         return {}
     doc = parse_xml(file)
     return doc
 
 
-def read_proxy_artifacts(dir, entrypoint):
-    try:
-        APIProxy = entrypoint['APIProxy']
+def read_proxy_artifacts(dir_name, entrypoint):
+    """Reads Apigee proxy artifacts \
+    from a directory.
 
-        proxyName = entrypoint['APIProxy']['@name']
+    Args:
+        dir: The directory containing \
+        the proxy files.
+        entrypoint: The entrypoint \
+        configuration.
+
+    Returns:
+        A dictionary containing the \
+        parsed proxy artifacts.
+    """
+    try:
+        api_proxy = entrypoint['APIProxy']
+
+        proxy_name = entrypoint['APIProxy']['@name']
         proxy_dict = {
             'BasePaths': [],
             'Policies': {},
             'ProxyEndpoints': {},
             'TargetEndpoints': {},
-            'proxyName': proxyName
+            'proxyName': proxy_name
         }
 
-        ProxyEndpoints = APIProxy.get('ProxyEndpoints')
-        if ProxyEndpoints is not None:
-            ProxyEndpoints = APIProxy['ProxyEndpoints'].get('ProxyEndpoint')
+        proxy_endpoints = api_proxy.get('ProxyEndpoints')
+        if proxy_endpoints is not None:
+            proxy_endpoints = api_proxy['ProxyEndpoints'].get('ProxyEndpoint')
 
-            ProxyEndpoints = ([ProxyEndpoints] if isinstance(
-                ProxyEndpoints, str) else ProxyEndpoints)
-            for each_pe in ProxyEndpoints:
+            proxy_endpoints = ([proxy_endpoints] if isinstance(
+                proxy_endpoints, str) else proxy_endpoints)
+            for each_pe in proxy_endpoints:
                 proxy_dict['ProxyEndpoints'][each_pe] = parse_xml(
-                    os.path.join(dir, 'proxies', f"{each_pe}.xml"))
+                    os.path.join(dir_name, 'proxies', f"{each_pe}.xml"))
 
-            proxy_dict['BasePaths'] = APIProxy['Basepaths']
+            proxy_dict['BasePaths'] = api_proxy['Basepaths']
 
-        if APIProxy.get('Policies') is not None:
-            policies = APIProxy['Policies']['Policy']
+        if api_proxy.get('Policies') is not None:
+            policies = api_proxy['Policies']['Policy']
             policies = ([policies] if isinstance(
-                APIProxy['Policies']['Policy'], str) else policies)
+                api_proxy['Policies']['Policy'], str) else policies)
 
             for each_policy in policies:
                 proxy_dict['Policies'][each_policy] = parse_xml(
-                    os.path.join(dir, 'policies', f"{each_policy}.xml"))
+                    os.path.join(dir_name, 'policies', f"{each_policy}.xml"))
 
-        if APIProxy.get('TargetEndpoints') is not None:
+        if api_proxy.get('TargetEndpoints') is not None:
 
-            TargetEndpoints = APIProxy['TargetEndpoints']['TargetEndpoint']
-            TargetEndpoints = ([TargetEndpoints] if isinstance(
-                TargetEndpoints, str) else TargetEndpoints)
-            for each_te in TargetEndpoints:
+            target_endpoints = api_proxy['TargetEndpoints']['TargetEndpoint']
+            target_endpoints = ([target_endpoints] if isinstance(
+                target_endpoints, str) else target_endpoints)
+            for each_te in target_endpoints:
                 proxy_dict['TargetEndpoints'][each_te] = parse_xml(
-                    os.path.join(dir, 'targets', f"{each_te}.xml"))
-    except Exception as error:
-        logger.error(f"Error: raised error in read_proxy_artifacts {error}")
-    finally:
-        return proxy_dict
+                    os.path.join(dir_name, 'targets', f"{each_te}.xml"))
+    except Exception as error: # noqa pylint: disable=W1203,W0718
+        logger.error(f"Error: raised error in read_proxy_artifacts {error}")  # noqa pylint: disable=W1203
+    return proxy_dict
 
 
-def get_target_endpoints(ProxyEndpointData):
+def get_target_endpoints(proxy_endpoint_data):
+    """Retrieves target endpoints from \
+    proxy endpoint data.
+
+    Args:
+        ProxyEndpointData: Proxy endpoint \
+        data dictionary.
+
+    Returns:
+        A list of target endpoints.
+    """
     target_endpoints = []
-    routes = ProxyEndpointData.get('RouteRule', [])
+    routes = proxy_endpoint_data.get('RouteRule', [])
     if len(routes) > 0:
         routes = (
-            [ProxyEndpointData['RouteRule']]
-            if isinstance(ProxyEndpointData['RouteRule'], dict)
-            else ProxyEndpointData['RouteRule']
+            [proxy_endpoint_data['RouteRule']]
+            if isinstance(proxy_endpoint_data['RouteRule'], dict)
+            else proxy_endpoint_data['RouteRule']
         )
 
-    for eachRoute in routes:
-        if 'TargetEndpoint' in eachRoute:
-            target_endpoints.append(eachRoute['TargetEndpoint'])
+    for each_route in routes:
+        if 'TargetEndpoint' in each_route:
+            target_endpoints.append(each_route['TargetEndpoint'])
     return target_endpoints
 
 
-def get_all_policies_from_step(Step):
+def get_all_policies_from_step(step):
+    """Retrieves all policies from a step.
+
+    Args:
+        Step: Step data dictionary.
+
+    Returns:
+        A list of policy names.
+    """
+
     policies = []
-    StepData = ([Step] if isinstance(Step, dict) else Step)
-    for eachStep in StepData:
-        policies.append(eachStep['Name'])
+    step_data = ([step] if isinstance(step, dict) else step)
+    for each_step in step_data:
+        policies.append(each_step['Name'])
     return policies
 
 
-def get_all_policies_from_flow(Flow, fault_rule=False):
+def get_all_policies_from_flow(flow, fault_rule=False):  # noqa pylint: disable=R0912
+    """Retrieves all policies from a flow.
+
+    Args:
+        Flow: Flow data dictionary.
+        fault_rule: Boolean indicating \
+        whether to
+            process fault rules.
+
+    Returns:
+        A list of policy names.
+    """
     policies = []
 
     if not fault_rule:
-        if Flow.get('Request'):
-            if isinstance(Flow['Request'], list) and len(Flow['Request']) > 0:
-                Flow['Request'] = Flow['Request'][0]
-            Request = ([] if Flow['Request'] is None else (
-                        [] if Flow['Request'].get('Step') is None else
+        if flow.get('Request'):
+            if isinstance(flow['Request'], list) and len(flow['Request']) > 0:
+                flow['Request'] = flow['Request'][0]
+            request = ([] if flow['Request'] is None else (
+                        [] if flow['Request'].get('Step') is None else
                         (
-                            [Flow['Request']['Step']] if isinstance(Flow['Request']['Step'], dict)  # noqa
-                            else Flow['Request']['Step']
+                            [flow['Request']['Step']] if isinstance(flow['Request']['Step'], dict)    # noqa pylint: disable=C0301
+                            else flow['Request']['Step']
                         )))
         else:
-            Request = []
-        if Flow.get('Response'):
-            if (isinstance(Flow['Response'], list) and
-                    len(Flow['Response']) > 0):
-                Flow['Response'] = Flow['Response'][0]
-            Response = ([] if Flow['Response'] is None else (
-                            [] if Flow['Response'].get('Step') is None else
+            request = []
+        if flow.get('Response'):
+            if (isinstance(flow['Response'], list) and
+                    len(flow['Response']) > 0):
+                flow['Response'] = flow['Response'][0]
+            response = ([] if flow['Response'] is None else (
+                            [] if flow['Response'].get('Step') is None else
                             (
-                            [Flow['Response']['Step']] if isinstance(Flow['Response']['Step'], dict)  # noqa
-                                else Flow['Response']['Step']
+                            [flow['Response']['Step']] if isinstance(flow['Response']['Step'], dict)   # noqa pylint: disable=C0301
+                                else flow['Response']['Step']
                             )))
         else:
-            Response = []
-        for each_flow in Request:
+            response = []
+        for each_flow in request:
             policies.extend(get_all_policies_from_step(each_flow))
-        for each_flow in Response:
+        for each_flow in response:
             policies.extend(get_all_policies_from_step(each_flow))
     else:
-        if Flow is None:
-            FaultRules = []
-        elif Flow.get('FaultRule', None) is None:
-            FaultRules = []
+        if flow is None:
+            fault_rules = []
+        elif flow.get('FaultRule', None) is None:
+            fault_rules = []
         else:
-            FaultRules = (
-                [Flow.get('Step')] if isinstance(Flow['FaultRule'].get('Step'), dict)  # noqa
-                else Flow['FaultRule'].get('Step')
+            fault_rules = (
+                [flow.get('Step')] if isinstance(flow['FaultRule'].get('Step'), dict)  # noqa
+                else flow['FaultRule'].get('Step')
             )
-        '''
-        if Flow is None :
-            FaultRules = []
-        else :
-            if isinstance(Flow, list) :
-                if 'Step' in Flow :
-                    FaultRules = ([Flow['Step']] if isinstance(Flow['Step'],dict) else Flow['Step'])   # noqa
-                else:
-                    FaultRules = []
-                    
-        '''
-        for each_step in FaultRules:
+        for each_step in fault_rules:
             policies.extend(get_all_policies_from_step(each_step))
     return policies
 
 
-def get_all_policies_from_endpoint(endpointData, endpointType):
+def get_all_policies_from_endpoint(endpoint_data, endpoint_type):
+    """Retrieves all policies from \
+    an endpoint.
+
+    Args:
+        endpointData: Endpoint data \
+        dictionary.
+        endpointType: Type of endpoint \
+        ('ProxyEndpoint'
+            or 'TargetEndpoint').
+
+    Returns:
+        A list of policy names.
+    """
     policies = []
     policies.extend(
         get_all_policies_from_flow(
-            endpointData[endpointType]['PreFlow']
-        ) if endpointData[endpointType].get('PreFlow') else []
+            endpoint_data[endpoint_type]['PreFlow']
+        ) if endpoint_data[endpoint_type].get('PreFlow') else []
     )
     policies.extend(
         get_all_policies_from_flow(
-            endpointData[endpointType]['PostFlow']
-        ) if endpointData[endpointType].get('PostFlow') else []
+            endpoint_data[endpoint_type]['PostFlow']
+        ) if endpoint_data[endpoint_type].get('PostFlow') else []
     )
 
-    if (isinstance(endpointData[endpointType].get('Flows'), list) and
-            len(endpointData[endpointType].get('Flows')) > 0):
-        endpointData[endpointType]['Flows'] = endpointData[endpointType]['Flows'][0]  # noqa
+    if (isinstance(endpoint_data[endpoint_type].get('Flows'), list) and
+            len(endpoint_data[endpoint_type].get('Flows')) > 0):
+        endpoint_data[endpoint_type]['Flows'] = endpoint_data[endpoint_type]['Flows'][0]  # noqa
 
-    Flows = (
+    flows = (
         []
-        if endpointData[endpointType].get('Flows') is None else
-        ([] if endpointData[endpointType].get('Flows').get('Flow') is None
+        if endpoint_data[endpoint_type].get('Flows') is None else
+        ([] if endpoint_data[endpoint_type].get('Flows').get('Flow') is None
             else (
-                [endpointData[endpointType]['Flows']['Flow']]
+                [endpoint_data[endpoint_type]['Flows']['Flow']]
                 if isinstance(
-                    endpointData[endpointType]['Flows']['Flow'], dict)
+                    endpoint_data[endpoint_type]['Flows']['Flow'], dict)
                 else
-                endpointData[endpointType]['Flows']['Flow']
+                endpoint_data[endpoint_type]['Flows']['Flow']
             )))
 
-    for eachFlow in Flows:
+    for each_flow in flows:
         policies.extend(
             get_all_policies_from_flow(
-                eachFlow
+                each_flow
             )
         )
-    if 'DefaultFaultRule' in endpointData[endpointType]:
+    if 'DefaultFaultRule' in endpoint_data[endpoint_type]:
 
         policies.extend(
             get_all_policies_from_flow(
-                endpointData[endpointType]['DefaultFaultRule'], True)
+                endpoint_data[endpoint_type]['DefaultFaultRule'], True)
         )
 
     return policies
 
 
 def get_proxy_objects_relationships(proxy_dict):
+    """Gets relationships between proxy objects.
+
+    Args:
+        proxy_dict: Dictionary containing \
+        proxy data.
+
+    Returns:
+        Dictionary mapping proxy endpoints \
+        to their
+        policies, basepaths, and target endpoints.
+    """
     proxy_object_map = {}
-    ProxyEndpoints = proxy_dict['ProxyEndpoints']
-    for ProxyEndpoint, ProxyEndpointData in ProxyEndpoints.items():
-        proxy_object_map[ProxyEndpoint] = {}
+    proxy_endpoints = proxy_dict['ProxyEndpoints']
+    for proxy_endpoint, proxy_endpoint_data in proxy_endpoints.items():
+        proxy_object_map[proxy_endpoint] = {}
 
         target_endpoints = get_target_endpoints(
-            ProxyEndpointData['ProxyEndpoint'])
-        TargetEndpointsData = {
+            proxy_endpoint_data['ProxyEndpoint'])
+        target_endpoints_data = {
             te: proxy_dict['TargetEndpoints'][te] for te in target_endpoints}
         policies = []
         policies.extend(get_all_policies_from_endpoint(
-            ProxyEndpointData, 'ProxyEndpoint'))
-        for _, each_te in TargetEndpointsData.items():
+            proxy_endpoint_data, 'ProxyEndpoint'))
+        for _, each_te in target_endpoints_data.items():
             policies.extend(get_all_policies_from_endpoint(
                 each_te, 'TargetEndpoint'))
-        proxy_object_map[ProxyEndpoint] = {
+        proxy_object_map[proxy_endpoint] = {
             'Policies': policies,
-            'BasePath': ProxyEndpointData['ProxyEndpoint']['HTTPProxyConnection'].get('BasePath'),  # noqa
+            'BasePath': proxy_endpoint_data['ProxyEndpoint']['HTTPProxyConnection'].get('BasePath'),   # noqa pylint: disable=C0301
             'TargetEndpoints': target_endpoints,
         }
 
@@ -547,6 +816,19 @@ def get_proxy_objects_relationships(proxy_dict):
 
 
 def get_api_path_groups(each_api_info):
+    """Groups API paths based on their \
+    base path.
+
+    Args:
+        each_api_info: Dictionary \
+        containing API
+            information.
+
+    Returns:
+        Dictionary mapping base paths to \
+        lists of
+        proxy endpoints.
+    """
     api_path_group_map = {}
     for pe, pe_info in each_api_info.items():
         if pe_info['BasePath'] is None:
@@ -565,6 +847,15 @@ def get_api_path_groups(each_api_info):
 
 
 def group_paths_by_path(api_info, pe_count_limit):
+    """Groups API paths based on a count limit.
+
+    Args:
+        api_info (dict): Dictionary of API path data.
+        pe_count_limit (int): The maximum number of paths per group.
+
+    Returns:
+        list: A list of groups, where each group is a list of API paths.
+    """
     result = []
     paths = list(api_info.keys())
     path_count = len(paths)
@@ -587,6 +878,15 @@ def group_paths_by_path(api_info, pe_count_limit):
 
 
 def bundle_path(each_group_bundle):
+    """Bundles API paths within each group.
+
+
+    Args:
+        each_group_bundle: List of API path groups.
+
+    Returns:
+        List of bundled API paths.
+    """
     outer_group = []
     for each_group in each_group_bundle:
         subgroups = {}
@@ -602,19 +902,37 @@ def bundle_path(each_group_bundle):
 
 
 def process_steps(step, condition):
+    """Processes steps in a flow.
+
+
+    Args:
+        step (dict): The step data.
+        condition (str): The condition to apply.
+
+    Returns:
+        list: A list of processed steps.
+    """
     processed_step = []
     if step is None:
         return processed_step
-    elif isinstance(step['Step'], dict):
+    if isinstance(step['Step'], dict):
         processed_step = [apply_condition(step['Step'], condition)]
-    elif isinstance(step['Step'], list):
+    if isinstance(step['Step'], list):
         processed_step = [apply_condition(i, condition) for i in step['Step']]
-    else:
-        return processed_step
     return processed_step
 
 
 def process_flow(flow, condition):
+    """Processes flows with conditions.
+
+
+    Args:
+        flow (dict): flow dictionary
+        condition (str): condition string
+
+    Returns:
+        dict: processed flow dictionary.
+    """
     processed_flow = flow.copy()
     if flow['Request'] is not None:
         processed_flow['Request']['Step'] = process_steps(flow['Request'],
@@ -628,6 +946,16 @@ def process_flow(flow, condition):
 
 
 def process_route_rules(route_rules, condition):
+    """Processes route rules with \
+    conditions.
+
+    Args:
+        route_rules: The route rules data.
+        condition: The condition to apply.
+
+    Returns:
+        A list of processed route rules.
+    """
     processed_rr = []
     for each_rr in (route_rules if isinstance(route_rules, list)
                     else [route_rules]):
@@ -637,6 +965,16 @@ def process_route_rules(route_rules, condition):
 
 
 def apply_condition(step, condition):
+    """Applies a condition to a step \
+    or rule.
+
+    Args:
+        step: The step or rule data.
+        condition: The condition to apply.
+
+    Returns:
+        The modified step or rule data.
+    """
     step_or_rule = step.copy()
     if 'Condition' in step_or_rule:
         if step_or_rule['Condition'] is None:
@@ -654,17 +992,32 @@ def apply_condition(step, condition):
 
 
 def merge_proxy_endpoints(api_dict, basepath, pes):
+    """Merges multiple proxy endpoints \
+    into one.
+
+    Args:
+        api_dict (dict): The API \
+        dictionary.
+        basepath (str): The base path \
+        for the merged
+            endpoint.
+        pes (list): List of proxy \
+        endpoints to merge.
+
+    Returns:
+        dict: The merged proxy endpoint.
+    """
     merged_pe = {'ProxyEndpoint': {}}
     for each_pe, each_pe_info in api_dict['ProxyEndpoints'].items():
         if each_pe in pes:
-            original_basepath = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['BasePath']   # noqa
-            # TODO : Build full Request path
-            condition = (original_basepath if original_basepath is None else f'(request.path Matches "{original_basepath}*")')   # noqa
+            original_basepath = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['BasePath']   # noqa pylint: disable=C0301
+            # TODO : Build full Request path   # noqa pylint: disable=W0511
+            condition = (original_basepath if original_basepath is None else f'(request.path Matches "{original_basepath}*")')   # noqa pylint: disable=C0301
             copied_flows = (
-                None if each_pe_info['ProxyEndpoint']['Flows'] is None else each_pe_info['ProxyEndpoint']['Flows'].copy()   # noqa
+                None if each_pe_info['ProxyEndpoint']['Flows'] is None else each_pe_info['ProxyEndpoint']['Flows'].copy()   # noqa pylint: disable=C0301
             )
             original_flows = ([] if copied_flows is None else
-                              ([copied_flows['Flow']] if isinstance(copied_flows['Flow'], dict) else copied_flows['Flow']))  # noqa
+                              ([copied_flows['Flow']] if isinstance(copied_flows['Flow'], dict) else copied_flows['Flow']))   # noqa pylint: disable=C0301
 
             if len(merged_pe['ProxyEndpoint']) == 0:
                 merged_pe['ProxyEndpoint'] = {
@@ -688,27 +1041,27 @@ def merge_proxy_endpoints(api_dict, basepath, pes):
                     'RouteRule': []
                 }
 
-                merged_pe['ProxyEndpoint']['Description'] = each_pe_info['ProxyEndpoint']['Description']  # noqa
-                merged_pe['ProxyEndpoint']['FaultRules'] = each_pe_info['ProxyEndpoint']['FaultRules']  # noqa
-                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['BasePath'] = (basepath if basepath is None else f'/{basepath}')  # noqa
-                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['Properties'] = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['Properties']  # noqa
-                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['VirtualHost'] = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['VirtualHost']  # noqa
+                merged_pe['ProxyEndpoint']['Description'] = each_pe_info['ProxyEndpoint']['Description']   # noqa pylint: disable=C0301
+                merged_pe['ProxyEndpoint']['FaultRules'] = each_pe_info['ProxyEndpoint']['FaultRules']   # noqa pylint: disable=C0301
+                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['BasePath'] = (basepath if basepath is None else f'/{basepath}')   # noqa pylint: disable=C0301
+                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['Properties'] = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['Properties']   # noqa pylint: disable=C0301
+                merged_pe['ProxyEndpoint']['HTTPProxyConnection']['VirtualHost'] = each_pe_info['ProxyEndpoint']['HTTPProxyConnection']['VirtualHost']   # noqa pylint: disable=C0301
 
-            merged_pe['ProxyEndpoint']['@name'].append(each_pe_info['ProxyEndpoint']['@name'])  # noqa
+            merged_pe['ProxyEndpoint']['@name'].append(each_pe_info['ProxyEndpoint']['@name'])   # noqa pylint: disable=C0301
             merged_pe['ProxyEndpoint']['RouteRule'].extend(
-                    process_route_rules(each_pe_info['ProxyEndpoint']['RouteRule'], condition)  # noqa
+                    process_route_rules(each_pe_info['ProxyEndpoint']['RouteRule'], condition)   # noqa pylint: disable=C0301
             )
             merged_pe['ProxyEndpoint']['PreFlow']['Request']['Step'].extend(
-                process_steps(each_pe_info['ProxyEndpoint']['PreFlow']['Request'], condition)  # noqa
+                process_steps(each_pe_info['ProxyEndpoint']['PreFlow']['Request'], condition)   # noqa pylint: disable=C0301
             )
             merged_pe['ProxyEndpoint']['PreFlow']['Response']['Step'].extend(
-                process_steps(each_pe_info['ProxyEndpoint']['PreFlow']['Response'], condition)  # noqa
+                process_steps(each_pe_info['ProxyEndpoint']['PreFlow']['Response'], condition)   # noqa pylint: disable=C0301
             )
             merged_pe['ProxyEndpoint']['PostFlow']['Request']['Step'].extend(
-                process_steps(each_pe_info['ProxyEndpoint']['PostFlow']['Request'], condition)  # noqa
+                process_steps(each_pe_info['ProxyEndpoint']['PostFlow']['Request'], condition)   # noqa pylint: disable=C0301
             )
             merged_pe['ProxyEndpoint']['PostFlow']['Response']['Step'].extend(
-                process_steps(each_pe_info['ProxyEndpoint']['PostFlow']['Response'], condition)  # noqa
+                process_steps(each_pe_info['ProxyEndpoint']['PostFlow']['Response'], condition)   # noqa pylint: disable=C0301
             )
             if 'PostClientFlow' in each_pe_info['ProxyEndpoint']:
                 merged_pe['ProxyEndpoint']['PostClientFlow'] = {
@@ -717,7 +1070,7 @@ def merge_proxy_endpoints(api_dict, basepath, pes):
                     'Response': {'Step': []},
                 }
                 merged_pe['ProxyEndpoint']['PostClientFlow']['Response']['Step'].extend(  # noqa
-                    process_steps(each_pe_info['ProxyEndpoint']['PostClientFlow']['Response'], None)  # noqa
+                    process_steps(each_pe_info['ProxyEndpoint']['PostClientFlow']['Response'], None)   # noqa pylint: disable=C0301
                 )
             for each_flow in original_flows:
                 merged_pe['ProxyEndpoint']['Flows']['Flow'].append(
@@ -728,6 +1081,14 @@ def merge_proxy_endpoints(api_dict, basepath, pes):
 
 
 def export_debug_log(files, log_path='logs'):
+    """Exports debug logs to JSON files.
+
+    Args:
+        files (dict): Dictionary of \
+        filenames and data.
+        log_path (str): Path to the log \
+        directory.
+    """
     create_dir(log_path)
     for file, data in files.items():
         file_name = f'{log_path}/{file}.json'
@@ -735,24 +1096,46 @@ def export_debug_log(files, log_path='logs'):
 
 
 def delete_file(src):
+    """Deletes a file.
+
+    Args:
+        src (str): Path to the file.
+    """
     try:
         os.remove(src)
     except FileNotFoundError as e:
-        logger.info(f'Ignoring : {e}')
-        return
+        logger.info(f'Ignoring : {e}')  # noqa pylint: disable=W1203
 
 
 def write_xml_from_dict(file, data):
+    """Writes XML data to a file from \
+    a dictionary.
+
+    Args:
+        file (str): Path to the file.
+        data (dict): Data to write.
+
+    Returns:
+        bool: True if successful, \
+        False otherwise.
+    """
     try:
-        with open(file, 'w') as fl:
+        with open(file, 'w') as fl:  # noqa pylint: disable=W1514
             fl.write(xmltodict.unparse(data, pretty=True))
     except FileNotFoundError:
-        logger.error(f"ERROR: File \"{file}\" not found")
+        logger.error(f"ERROR: File \"{file}\" not found")  # noqa pylint: disable=W1203
         return False
     return True
 
 
 def copy_folder(src, dst):
+    """Copies a folder.
+
+    Args:
+        src (str): Source folder path.
+        dst (str): Destination folder \
+        path.
+    """
     try:
         shutil.copytree(src, dst)
     except FileNotFoundError as e:
@@ -761,6 +1144,15 @@ def copy_folder(src, dst):
 
 
 def clean_up_artifacts(target_dir, artifacts_to_retains):
+    """Cleans up artifacts in a directory, \
+    retaining specified ones.
+
+    Args:
+        target_dir (str): The directory \
+        to clean.
+        artifacts_to_retains (list): \
+        Artifacts to retain.
+    """
     for file in list_dir(target_dir, True):
         each_policy_file = file.split('.xml')[0]
         if each_policy_file not in artifacts_to_retains:
@@ -768,21 +1160,40 @@ def clean_up_artifacts(target_dir, artifacts_to_retains):
 
 
 def filter_objects(obj_data, obj_type, targets):
+    """Filters objects based on type \
+    and target list.
+
+    Args:
+        obj_data (dict): The object data.
+        obj_type (str): The object type.
+        targets (list): The target list.
+
+    Returns:
+        dict or None: Filtered object \
+        data, or None
+            if no matching objects are found.
+    """
     result = None
     if obj_data is None:
         return result
-    elif isinstance(obj_data.get(obj_type), str):
-        result = ({obj_type: obj_data[obj_type]} if obj_data[obj_type] in targets else None)  # noqa
+    if isinstance(obj_data.get(obj_type), str):
+        result = ({obj_type: obj_data[obj_type]} if obj_data[obj_type] in targets else None) # noqa
     elif isinstance(obj_data.get(obj_type), list):
         result = {obj_type: [v for v in obj_data[obj_type] if v in targets]}
-    else:
-        return result
     return result
 
 
 def zipdir(path, ziph):
+    """Zips a directory.
+
+    Args:
+        path (str): Path to the \
+        directory.
+        ziph (zipfile.ZipFile): Zip file \
+        handle.
+    """
     # ziph is zipfile handle
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(path):  # noqa pylint: disable=W0612
         for file in files:
             ziph.write(os.path.join(root, file),
                        os.path.relpath(os.path.join(root, file),
@@ -791,6 +1202,23 @@ def zipdir(path, ziph):
 
 def clone_proxies(source_dir, target_dir,
                   objects, merged_pes, proxy_bundle_directory):
+    """Clones and modifies Apigee proxies.
+
+    Args:
+        source_dir (str): The source \
+        directory.
+        target_dir (str): The target \
+        directory.
+        objects (dict): Objects to include.
+        merged_pes (dict): Merged proxy \
+        endpoints.
+        proxy_bundle_directory (str): \
+        Directory to store
+            proxy bundles.
+
+    Returns:
+        dict: The merged proxy endpoints.
+    """
     try:
         target_dir = f"{target_dir}/apiproxy"
         delete_folder(target_dir)
@@ -803,7 +1231,7 @@ def clone_proxies(source_dir, target_dir,
         root['APIProxy']['Policies'] = filter_objects(
             root['APIProxy']['Policies'], 'Policy', objects['Policies'])
         root['APIProxy']['TargetEndpoints'] = filter_objects(
-            root['APIProxy']['TargetEndpoints'], 'TargetEndpoint', objects['TargetEndpoints'])  # noqa
+            root['APIProxy']['TargetEndpoints'], 'TargetEndpoint', objects['TargetEndpoints'])   # noqa pylint: disable=C0301
         clean_up_artifacts(f"{target_dir}/policies", objects['Policies'])
         clean_up_artifacts(f"{target_dir}/targets", objects['TargetEndpoints'])
         for pe in objects['ProxyEndpoints']:
@@ -811,17 +1239,16 @@ def clone_proxies(source_dir, target_dir,
                 f"{target_dir}/proxies/{pe}.xml", merged_pes[pe])
         clean_up_artifacts(f"{target_dir}/proxies", objects['ProxyEndpoints'])
         root['APIProxy']['ProxyEndpoints'] = {'ProxyEndpoint': (
-            objects['ProxyEndpoints'] if len(objects['ProxyEndpoints']) > 1 else objects['ProxyEndpoints'][0])}  # noqa
+            objects['ProxyEndpoints'] if len(objects['ProxyEndpoints']) > 1 else objects['ProxyEndpoints'][0])}   # noqa pylint: disable=C0301
         transformed_file = file.split('/')
         transformed_file[-1] = f"{objects['Name']}.xml"
         write_xml_from_dict("/".join(transformed_file), root)
         delete_folder(f"{target_dir}/manifests")
 
-        with zipfile.ZipFile(f"{proxy_bundle_directory}/{objects['Name']}.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:  # noqa
+        with zipfile.ZipFile(f"{proxy_bundle_directory}/{objects['Name']}.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:   # noqa pylint: disable=C0301
             zipdir(target_dir, zipf)
 
-    except Exception as error:
-        logger.error(
+    except Exception as error: # noqa pylint: disable=W1203,W0718
+        logger.error(   # noqa pylint: disable=C0301,W1203
             f"some error occurred in clone proxy function error. ERROR-INFO - {error}")  # noqa
-    finally:
-        return merged_pes
+    return merged_pes
