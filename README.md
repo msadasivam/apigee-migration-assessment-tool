@@ -144,3 +144,17 @@ You can run this tool locally or using Docker.
 2. **Visualization:**
     visualization.html in the TARGET_DIR. Open this file in a web browser. 
     See the ![alt text](assets/visualization.png) for a sample visualization.
+
+
+## Contributing
+We welcome contributions from the community. If you would like to contribute to this project, please see our [Contribution Guidelines](./CONTRIBUTING.md).
+
+## License
+
+All solutions within this repository are provided under the
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+Please see the [LICENSE](./LICENSE) file for more detailed terms and conditions.
+
+## Disclaimer
+
+This repository and its contents are not an official Google product.
