@@ -49,12 +49,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.CICD_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Build Docker image
-        run: |
-          docker build -t "$IMAGE_NAME" .
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v6
+        with:
+          load: true
+          tags: ${{ env.IMAGE_NAME }}
 
       - name: Fetch input.properties
         run: |
@@ -68,6 +67,3 @@ jobs:
             -e "APIGEE_ACCESS_TOKEN=${{ steps.auth.outputs.access_token }}" \
             "$IMAGE_NAME" \
             --resources all
-
-      - name: Push Docker image
-        run: docker push "$IMAGE_NAME"

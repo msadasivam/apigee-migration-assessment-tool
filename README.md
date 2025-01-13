@@ -1,145 +1,146 @@
 # Apigee Migration Assessment Tool
 
-[![Build Status](https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml)
+[![Build Status](https://github.com/apigee/apigee-migration-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/apigee/apigee-migration-assessment-tool/actions/workflows/tests.yml)
 
-This repository houses the Apigee Migration Assessment tool, a Python-developed utility. The tool evaluates a source Apigee 4G environment (Edge OPDK or Edge SaaS) and generates a report to aid in planning your migration to Apigee 5G (Apigee X or Apigee Hybrid).
+This tool helps you plan your migration from Apigee Edge (OPDK or SaaS) to Apigee X/Hybrid by analyzing your source environment and generating a report.
 
-# Pre-requisites
-You can run the tool locally or you can use a docker image.
+## Prerequisites
 
-* For local run you will have to install the required python libraries and dependent tools.
-* For docker run , you can build the image your self or pull the publicly avaialable docker image
+You can run this tool locally or using Docker.
 
-## Local setup
+* **Local:** Requires installing Python libraries and dependencies.
+* **Docker:**  You can build the image yourself.
 
-#### Install Depedencies  
+### Local Setup
 
-* Install Graphviz following https://graphviz.org/download/
+1. **Install Graphviz:** Follow the instructions at https://graphviz.org/download/
 
+2. **Install Python venv:**
 
-* Install Python venv
+   ```bash
+   python3 -m pip install virtualenv==20.24.4
+   ```
+3. **Create and activate a virtual environment:**
+   ```bash
+    python3 -m venv dev
+    source dev/bin/activate
+   ```
+4. **Install Python dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-```
-python3 -m pip install virtualenv==20.24.4
-```
+### Docker Setup
+1. **Build the Docker image:**
+    ```bash
+    docker build -t <image_name>:<tag> .
+    docker push <image_name>:<tag>
+    ```
 
-* Install Python dependencies inside virtual env
+2. **Run the Docker image:**
+    ```bash
+    docker run <image_name>:<tag>
+    ```
 
-```
-python3 -m venv dev
-source dev/bin/activate
-pip install -r requirements.txt
-```
+## Tool Usage
+1. **Complete Assessment**
 
-## Docker setup
+    To assess all Apigee objects:
+    ```bash
+    python3 main.py --resources all
+    ```
 
-#### Build your own docker image
-You can build your own docker image using the `Dockerfile` provided
-```
-docker build -t <image>:<tag> .
-docker run <image>:<tag>
-```
+2. **Selective Assessment**
 
-#### Use image from dockerhub
+    To assess specific Apigee objects, use the --resources flag followed by a comma-separated list:
+    ```bash
+    python3 main.py --resources <resource1>,<resource2>,...
+    ```
+    Available resources:
+    * Environment Level: targetservers, keyvaluemaps, references, resourcefiles, keystores, flowhooks
+    * Organization Level: org_keyvaluemaps, developers, apiproducts, apis, apps, sharedflows
 
-You can use  pre-built docker image by pulling using the `ashwinknaik/apigee-migration-assessment-tool:1`
+    Examples
 
-```
-docker pull ashwinknaik/apigee-migration-assessment-tool:1
-docker run ashwinknaik/apigee-migration-assessment-tool:1
-```
+    ```bash
+    python3 main.py --resources targetservers,keyvaluemaps
+    python3 main.py --resources keystores,apps
+    ```
+## Running the Tool
+1. **Prepare input.properties**
 
+    Create an input.properties file in the same directory as the Python scripts. See the example below. Replace the placeholder values with your actual Apigee configuration details.
+    ```
+    [inputs]      
+    SOURCE_URL=https://xxx/v1                # Apigee OPDK/Edge Management URL 
+    SOURCE_ORG=xxx                           # Apigee OPDK/Edge Organization
+    SOURCE_AUTH_TYPE=basic | oauth           # Apigee OPDK/Edge auth type , basic or oauth
+    SOURCE_UI_URL=https://xxx                # Apigee OPDK/Edge UI URL
+    SOURCE_APIGEE_VERSION=xxxx               # APIGEE Flavor OPDK/SAAS/X/HYBRID
+    GCP_PROJECT_ID=xx-xx-xx                  # Apigee X/Hybrd Organiziation ID
+    API_URL=https://xxx/docs                 # Apigee API url
+    GCP_ENV_TYPE=BASE | INTERMEDIATE | COMPREHENSIVE    # Apigee X/Hybrid desired environment type
+    TARGET_DIR=target                        # Name of directory to export apigee objects 
+    SSL_VERIFICATION=true                    # Set to false , to ignore SSL verification
 
-# Specify Inputs
+    [export]
+    EXPORT_DIR=export
+    EXPORT_FILE=export_data.json
 
-Create an `input.properties` file with the following data-
+    [topology]
+    TOPOLOGY_DIR=topology
+    NW_TOPOLOGY_MAPPING=pod_component_mapping.json
+    DATA_CENTER_MAPPING=data_center_mapping.json
 
-```
-[inputs]      
-SOURCE_URL=https://xxx/v1                # Apigee OPDK/Edge Management URL 
-SOURCE_ORG=xxx                           # Apigee OPDK/Edge Organization
-SOURCE_AUTH_TYPE=basic | oauth           # Apigee OPDK/Edge auth type , basic or ouath
-SOURCE_UI_URL=https://xxx                # Apigee OPDK/Edge UI URL
-SOURCE_APIGEE_VERSION=xxxx               # APIGEE Flavor OPDK/SAAS/X/HYBRID
-GCP_PROJECT_ID=xx-xx-xx                  # Apigee X/Hybrd Organiziation ID
-API_URL=https://xxx/docs                 # Apigee API url
-GCP_ENV_TYPE=BASE | INTERMEDIATE | COMPREHENSIVE    # Apigee X/Hybrid desired environment type - [See docs](https://cloud.google.com/apigee/docs/api-platform/fundamentals/environments-overview#environment-types)
-TARGET_DIR=target                        # Name of directory to export apigee objects from SOURCE_URL
-SSL_VERIFICATION=true                    # Set to false , to ingnore SSL verification
+    [report]
+    QUALIFICATION_REPORT=qualification_report.xlsx
 
-[export]
-EXPORT_DIR=export
-EXPORT_FILE=export_data.json
+    [visualize]
+    VISUALIZATION_GRAPH_FILE=visualization.html
 
-[topology]
-TOPOLOGY_DIR=topology
-NW_TOPOLOGY_MAPPING=pod_component_mapping.json
-DATA_CENTER_MAPPING=data_center_mapping.json
+    [validate]
+    CSV_REPORT=report.csv
+    ```
+2. **Generate Apigee Edge SAAS/OPDK Auth Tokens:**
 
-[report]
-QUALIFICATION_REPORT=qualification_report.xlsx # Default - qualification_report.xlsx
+    * Basic Auth:
+    ```bash
+    export SOURCE_AUTH_TOKEN=`echo -n '<username>:<password>' | base64`
+    ```
+    *  OAuth2/SAML:
+    
+    Refer to the [Apigee documentation](https://docs.apigee.com/api-platform/system-administration/management-api-overview) for generating OAuth2 tokens.
+    ```bash
+    export SSO_LOGIN_URL=https://login.apigee.com  # Example
+    export SOURCE_AUTH_TOKEN=$(get_token -u <user>:<password> -m xxxx) # Example using a helper script
+    ```
 
-[visualize]
-VISUALIZATION_GRAPH_FILE=visualization.html    # Default - visualization.html
+3. **Generate Apigee X/Hybrid Auth Tokens:**
+    ```bash
+    export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)
+    ```
+4. **Run the Tool:**
 
-[validate]
-CSV_REPORT=report.csv
-```
+    * Local Run:
+    ```bash
+    python3 main.py --resources <resources>
+    ```
 
-# Usage 
+    * Docker Run:
+    ```bash
+    export DOCKER_IMAGE="<image_name>:<tag>"
 
-To generate the Migration assessment report for all Apigee Objects run the command
+    docker run --rm   -v "$(pwd)/output:/app/target" \
+        -v "$(pwd)/input.properties:/app/input.properties" \
+        -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
+        -e APIGEE_ACCESS_TOKEN=$APIGEE_ACCESS_TOKEN \
+        $DOCKER_IMAGE --resources all
+    ```
 
-```
-python3 main.py --resources all
-```
+## Accessing the Report and Visualization
 
-
-To selectively assess only certain Apigee Objects. The utility also supports the below arguments. 
-
-* `--resources RESOURCES` resources can be one of or comma seperated list of
-```                   
-* targetservers
-* keyvaluemaps
-* references
-* resourcefiles
-* keystores
-* flowhooks
-* developers
-* apiproducts
-* apis
-* apps
-```
-                                                
-> For Apigee Environment level objects choose
->    `targetservers,keyvaluemaps,references,resourcefiles,keystores,flowhooks`
-
-> For Apigee Organization level objects choose
->    `keyvaluemaps,developers,apiproducts,apis,apps`
-
-> Example1: `--resources targetservers,keyvaluemaps`
-> Example2: `--resources keystores,apps`
-                                                
-
-Command to run the tool
-```
-python3 main.py --resources targetservers
-
-```
-
-
-# Accessing the report
-
-Once the tool is run, it will create a file called `qualification_report.xlsx`
-
-You can import it to Google Sheets or any other application which can read `.xlsx` format
-
-
-# Accessing the visualisation
-
-Once the tool is run, it will create a file called `visualization.html`
-
-You can access it by opening it in any browser
-
-### Sample visualisation
-![alt text](assets/visualization.png)
+1. **Assessment Report:**
+    qualification_report.xlsx in the TARGET_DIR (specified in input.properties).
+2. **Visualization:**
+    visualization.html in the TARGET_DIR. Open this file in a web browser. 
+    See the ![alt text](assets/visualization.png) for a sample visualization.
