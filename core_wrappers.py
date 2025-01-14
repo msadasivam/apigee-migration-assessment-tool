@@ -244,7 +244,7 @@ def validate_artifacts(cfg, export_data):  # noqa pylint: disable=R0914
         report[env + SEPERATOR +
                'flowhooks'] = apigee_validator.validate_env_flowhooks(env, flowhooks)  # noqa
 
-    validation = apigee_validator.validate_proxy_bundles(f"{export_dir}/apis")
+    validation = apigee_validator.validate_proxy_bundles(export_dir)
     # Todo  # pylint: disable=W0511
     # validate proxy unifier output bundles
     report.update(validation)

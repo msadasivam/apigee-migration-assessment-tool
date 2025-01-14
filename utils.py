@@ -363,6 +363,7 @@ def retry(retries=3, delay=1, backoff=2):  # noqa pylint: disable=W0613
     """
     def decorator(func):   # noqa
         def wrapper(*args, **kwargs): # noqa pylint: disable=R1710
+            delay = 1
             for attempt in range(retries + 1):
                 try:
                     return func(*args, **kwargs)
