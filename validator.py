@@ -150,8 +150,9 @@ class ApigeeValidator():
         """
         validation = {'apis': [], 'sharedflows': []}
         for each_api_type in ['apis', 'sharedflows']:
-            for proxy_bundle in list_dir(export_dir):
-                each_validation = self.validate_proxy(export_dir, each_api_type, proxy_bundle)    # noqa pylint: disable=C0301
+            bundle_dir = f"{export_dir}/{each_api_type}"
+            for proxy_bundle in list_dir(bundle_dir):
+                each_validation = self.validate_proxy(bundle_dir, each_api_type, proxy_bundle)    # noqa pylint: disable=C0301
                 validation[each_api_type].append(each_validation)
         return validation
 

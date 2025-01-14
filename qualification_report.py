@@ -975,13 +975,15 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
 
         row = 1
         for key, value in self.export_data['validation_report'].items():
-            col = 0
+            # col = 0
             if key == "report":
                 continue
-            validation_report_sheet.write(row, col, key)
+            # validation_report_sheet.write(row, col, key)
 
             for values in value:
-                col = 1
+                col = 0
+                validation_report_sheet.write(row, col, key)
+                col += 1
                 validation_report_sheet.write(row, col, values['name'])
                 col += 1
                 if values['importable']:
