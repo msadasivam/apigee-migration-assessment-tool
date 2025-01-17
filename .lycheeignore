@@ -4,3 +4,8 @@
 
 https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml/badge.svg
 https://github.com/cloud-innovations/apigee-migration-assessment-tool/actions/workflows/tests.yml
+https://docs.apigee.com/api-platform/develop/comparing-quota-spike-arrest-and-concurrent-rate-limit-policies
+https://docs.apigee.com/api-platform/system-administration/management-api-overview
+https://docs.apigee.com/migration-to-x/migration-antipatterns#multiple-base-paths-deployed-for-an-api-proxy
+https://docs.apigee.com/api-platform/antipatterns/non-distributed-quota
+https://docs.apigee.com/migration-to-x/migration-antipatterns#cache-without-expiry-time
