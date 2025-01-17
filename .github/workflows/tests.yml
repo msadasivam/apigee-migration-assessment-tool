@@ -26,11 +26,32 @@ on:  # yamllint disable-line rule:truthy
 permissions: read-all
 
 env:
+  REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/${{ github.repository }}/apigee-migration-assessment-tool:latest
 
 jobs:
-  build_and_run_tool:
+  docker-build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v6
+        with:
+          load: true
+          tags: ${{ env.IMAGE_NAME }}
+
+  test-opdk:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-build
     permissions:
       id-token: write
       contents: read
@@ -46,15 +67,6 @@ jobs:
           service_account: ${{ secrets.SVC_ACCOUNT_EMAIL }}
           export_environment_variables: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and export to Docker
-        uses: docker/build-push-action@v6
-        with:
-          load: true
-          tags: ${{ env.IMAGE_NAME }}
-
       - name: Fetch input.properties
         run: |
             echo ${{ secrets.OPDK_INPUT_PROPERTIES }} | base64 -d > ${{ github.workspace }}/input.properties
@@ -67,3 +79,31 @@ jobs:
             -e "APIGEE_ACCESS_TOKEN=${{ steps.auth.outputs.access_token }}" \
             "$IMAGE_NAME" \
             --resources all
+
+  publish-image:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-build
+      - test-opdk
+    permissions:
+      id-token: write
+      contents: write # needed to publish sbom
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a #v2.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Docker container
+        run: |
+          docker run push $IMAGE_NAME
