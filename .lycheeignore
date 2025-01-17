@@ -9,3 +9,12 @@ https://docs.apigee.com/api-platform/system-administration/management-api-overvi
 https://docs.apigee.com/migration-to-x/migration-antipatterns#multiple-base-paths-deployed-for-an-api-proxy
 https://docs.apigee.com/api-platform/antipatterns/non-distributed-quota
 https://docs.apigee.com/migration-to-x/migration-antipatterns#cache-without-expiry-time
+https://docs.apigee.com/migration-to-x/migration-antipatterns#apps-without-api-products
+https://docs.apigee.com/api-platform/reference/policies/quota-policy#synchronous
+https://cloud.google.com/apigee/docs/api-platform/reference/limits
+https://docs.apigee.com/migration-to-x/migration-antipatterns#trial-certificate-in-a-virtual-host
+https://jsonpath-comparison-lwy4scuauq-wl.a.run.app/
+https://cloud.google.com/apigee/docs/api-platform/reference/limits#api-proxies
+https://cloud.google.com/apigee/docs/api-platform/security/google-auth/overview
+https://cloud.google.com/apigee/docs/api-platform/reference/policies/oauthv2-policy
+https://cloud.google.com/apigee/docs/api-platform/reference/policies/data-capture-policy

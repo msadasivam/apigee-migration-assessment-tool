@@ -31,7 +31,13 @@ You can run this tool locally or using Docker.
     ```
 
 ### Docker Setup
-1. **Build the Docker image:**
+1.  **Use a pre-built Docker image:**
+    ```bash
+    docker pull ghcr.io/apigee/apigee-migration-assessment-tool/apigee-migration-assessment-tool:latest
+    ```
+    **OR**
+
+    **Build the Docker image:**
     ```bash
     docker build -t <image_name>:<tag> .
     docker push <image_name>:<tag>
