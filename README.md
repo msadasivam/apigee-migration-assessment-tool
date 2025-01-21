@@ -48,6 +48,26 @@ You can run this tool locally or using Docker.
     docker run <image_name>:<tag>
     ```
 
+## Apigee Permissions
+* **Apigee Edge SAAS/OPDK**
+
+   The tool requires permissions to export all objects from Apigee Egde. Hence assign the following permission to relevant user.
+   * `Read-only Organization Administrator`
+
+   Refer: [edge-built-roles](https://docs.apigee.com/api-platform/system-administration/edge-built-roles)
+
+* **Apigee X/Hybrid**
+
+   The tool requires readonly permissions to org, env & env objects. The tool also requires permissions to validate apis. Hence assign the below permissions to relevant user or service account.
+   * A built-in role `roles/apigee.readOnlyAdmin`
+   * A custom role with `apigee.proxies.create` permission
+        ```bash
+        gcloud iam roles create ApigeeAPIValidator --project=<PROJECT_ID> \
+        --title="Apigee API Validator" --description="Apigee API Import validator" \
+        --permissions="apigee.proxies.create" --stage=Alpha
+        ```
+    Refer: [apigee-roles](https://cloud.google.com/iam/docs/understanding-roles#apigee-roles)
+
 ## Tool Usage
 1. **Complete Assessment**
 
