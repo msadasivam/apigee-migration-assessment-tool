@@ -156,7 +156,7 @@ You can run this tool locally or using Docker.
 1. **Assessment Report:**
     `qualification_report.xlsx` in the TARGET_DIR (specified in input.properties).
 
-    Please find [sample assessment](sample/outputs/qualification_report.xlsx) in the [sample/outputs](sample/outputs) folder
+    Please find [sample assessment](sample/outputs/sample_qualification_report.xlsx) in the [sample/outputs](sample/outputs) folder
 
 2. **Visualization:**
     `visualization.html` in the `TARGET_DIR`. Open this file in a web browser.
