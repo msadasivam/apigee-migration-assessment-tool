@@ -95,38 +95,26 @@ You can run this tool locally or using Docker.
 ## Running the Tool
 1. **Prepare input.properties**
 
-    Create an input.properties file in the same directory as the Python scripts. See the example below. Replace the placeholder values with your actual Apigee configuration details.
-    ```
-    [inputs]      
-    SOURCE_URL=https://xxx/v1                # Apigee OPDK/Edge Management URL 
-    SOURCE_ORG=xxx                           # Apigee OPDK/Edge Organization
-    SOURCE_AUTH_TYPE=basic | oauth           # Apigee OPDK/Edge auth type , basic or oauth
-    SOURCE_UI_URL=https://xxx                # Apigee OPDK/Edge UI URL
-    SOURCE_APIGEE_VERSION=xxxx               # APIGEE Flavor OPDK/SAAS/X/HYBRID
-    GCP_PROJECT_ID=xx-xx-xx                  # Apigee X/Hybrd Organiziation ID
-    API_URL=https://xxx/docs                 # Apigee API url
-    GCP_ENV_TYPE=BASE | INTERMEDIATE | COMPREHENSIVE    # Apigee X/Hybrid desired environment type
-    TARGET_DIR=target                        # Name of directory to export apigee objects 
-    SSL_VERIFICATION=true                    # Set to false , to ignore SSL verification
+    Create an `input.properties` file in the **same directory** as the Python scripts.
+    Please find sample inputs in the `sample/inputs` folder
+    * [sample opdk input](sample/inputs/opdk.input.properties)
+    * [sample saas input](sample/inputs/saas.input.properties)
 
-    [export]
-    EXPORT_DIR=export
-    EXPORT_FILE=export_data.json
+    Refer the below table to set the required inputs in the `input` section of `input.properties` file.
 
-    [topology]
-    TOPOLOGY_DIR=topology
-    NW_TOPOLOGY_MAPPING=pod_component_mapping.json
-    DATA_CENTER_MAPPING=data_center_mapping.json
+    | Section  | Input   | Description |
+    | -------- | ------- | ------- |
+    | `input`  | `SOURCE_URL`    | Apigee OPDK/Edge Management URL |
+    | `input`  | `SOURCE_ORG`     | Apigee OPDK/Edge Organization|
+    | `input`  | `SOURCE_AUTH_TYPE`    | Apigee OPDK/Edge auth type , `basic` OR `oauth`|
+    | `input`  | `SOURCE_UI_URL`    | Apigee OPDK/Edge UI URL, use default|
+    | `input`  | `SOURCE_APIGEE_VERSION`     | APIGEE Flavor `OPDK` OR `SAAS` OR `X` OR `HYBRID`|
+    | `input`  | `GCP_PROJECT_ID`    | GCP Project ID running Apigee X/Hybrd. Trial orgs are supported|
+    | `input`  | `API_URL`    | Apigee API url, use default |
+    | `input`  | `GCP_ENV_TYPE`     | Apigee X/Hybrid desired environment type |
+    | `input`  | `TARGET_DIR`    | Name of directory to export apigee objects |
+    | `input`  | `SSL_VERIFICATION`    | Set to `false` , to ignore SSL verification else set it to `true`|
 
-    [report]
-    QUALIFICATION_REPORT=qualification_report.xlsx
-
-    [visualize]
-    VISUALIZATION_GRAPH_FILE=visualization.html
-
-    [validate]
-    CSV_REPORT=report.csv
-    ```
 2. **Generate Apigee Edge SAAS/OPDK Auth Tokens:**
 
     * Basic Auth:
@@ -166,10 +154,15 @@ You can run this tool locally or using Docker.
 ## Accessing the Report and Visualization
 
 1. **Assessment Report:**
-    qualification_report.xlsx in the TARGET_DIR (specified in input.properties).
+    `qualification_report.xlsx` in the TARGET_DIR (specified in input.properties).
+
+    Please find [sample assessment](sample/outputs/qualification_report.xlsx) in the [sample/outputs](sample/outputs) folder
+
 2. **Visualization:**
-    visualization.html in the TARGET_DIR. Open this file in a web browser. 
-    See the ![alt text](assets/visualization.png) for a sample visualization.
+    `visualization.html` in the `TARGET_DIR`. Open this file in a web browser.
+    Refer the sample visualization
+
+    ![alt text](assets/visualization.png) .
 
 
 ## Contributing
