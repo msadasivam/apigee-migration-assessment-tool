@@ -195,7 +195,7 @@ credentials.json
 .terraform.lock.hcl
 .DS_Store
 
-*qualification_report.xlsx
+qualification_report.xlsx
 
 unzip
 
