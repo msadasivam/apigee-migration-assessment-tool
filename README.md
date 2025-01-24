@@ -135,21 +135,32 @@ You can run this tool locally or using Docker.
     ```
 4. **Run the Tool:**
 
-    * Local Run:
-    ```bash
-    python3 main.py --resources <resources>
-    ```
+    * **Local Run:**
+        ```bash
+        python3 main.py --resources <resources>
+        ```
 
-    * Docker Run:
-    ```bash
-    export DOCKER_IMAGE="<image_name>:<tag>"
+    * **Docker Run:**
+        ```bash
+        export DOCKER_IMAGE="<image_name>:<tag>"
 
-    docker run --rm   -v "$(pwd)/output:/app/target" \
-        -v "$(pwd)/input.properties:/app/input.properties" \
-        -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
-        -e APIGEE_ACCESS_TOKEN=$APIGEE_ACCESS_TOKEN \
-        $DOCKER_IMAGE --resources all
-    ```
+        docker run --rm   -v "$(pwd)/output:/app/target" \
+            -v "$(pwd)/input.properties:/app/input.properties" \
+            -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
+            -e APIGEE_ACCESS_TOKEN=$APIGEE_ACCESS_TOKEN \
+            $DOCKER_IMAGE --resources all
+        ```
+
+        Eg.
+        ```bash
+        export DOCKER_IMAGE="ghcr.io/apigee/apigee-migration-assessment-tool/apigee-migration-assessment-tool:latest"
+
+        docker run --rm   -v "$(pwd)/output:/app/target" \
+            -v "$(pwd)/input.properties:/app/input.properties" \
+            -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
+            -e APIGEE_ACCESS_TOKEN=$APIGEE_ACCESS_TOKEN \
+            $DOCKER_IMAGE --resources all
+        ```
 
 ## Accessing the Report and Visualization
 
