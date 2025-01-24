@@ -142,8 +142,9 @@ You can run this tool locally or using Docker.
 
     * **Docker Run:**
         ```bash
+        mkdir output
+        sudo chmod 777 output
         export DOCKER_IMAGE="<image_name>:<tag>"
-
         docker run --rm   -v "$(pwd)/output:/app/target" \
             -v "$(pwd)/input.properties:/app/input.properties" \
             -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
@@ -153,8 +154,9 @@ You can run this tool locally or using Docker.
 
         Eg.
         ```bash
+        mkdir output
+        sudo chmod 777 output
         export DOCKER_IMAGE="ghcr.io/apigee/apigee-migration-assessment-tool/apigee-migration-assessment-tool:latest"
-
         docker run --rm   -v "$(pwd)/output:/app/target" \
             -v "$(pwd)/input.properties:/app/input.properties" \
             -e SOURCE_AUTH_TOKEN=$SOURCE_AUTH_TOKEN \
