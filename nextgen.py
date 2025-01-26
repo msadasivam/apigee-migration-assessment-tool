@@ -43,16 +43,16 @@ class ApigeeNewGen():
         self.token = token
         self.env_type = env_type or 'ENVIRONMENT_TYPE_UNSPECIFIED'
         self.org_object_map = {
-            'apis': { 'key': 'proxies', 'subkey': 'name' },
-            'sharedflows': { 'key': 'sharedFlows', 'subkey': 'name' },
-            'envgroups': { 'key': 'environmentGroups', 'subkey': 'name' },
-            'apps': { 'key': 'app', 'subkey': 'appId' },
-            'developers': { 'key': 'developer', 'subkey': 'email' },
-            'keyvaluemaps': { 'key': None, 'subkey': None },
-            'environments': { 'key': None, 'subkey': None },
+            'apis': {'key': 'proxies', 'subkey': 'name'},
+            'sharedflows': {'key': 'sharedFlows', 'subkey': 'name'},
+            'envgroups': {'key': 'environmentGroups', 'subkey': 'name'},
+            'apps': {'key': 'app', 'subkey': 'appId'},
+            'developers': {'key': 'developer', 'subkey': 'email'},
+            'keyvaluemaps': {'key': None, 'subkey': None},
+            'environments': {'key': None, 'subkey': None},
         }
-        self.env_objects = ['keyvaluemaps', 'targetservers', 'flowhooks', 'keystores'
-                            'caches']
+        self.env_objects = ['keyvaluemaps', 'targetservers', 'flowhooks',
+                            'keystores', 'caches']
         self.client = RestClient('oauth', token)
 
     def get_org(self):
@@ -72,13 +72,13 @@ class ApigeeNewGen():
             list: A list containing the org object details.
         """
         org_objects = []
-        url = f"{self.baseurl}/organizations/{self.project_id}/{org_object_type}"
+        url = f"{self.baseurl}/organizations/{self.project_id}/{org_object_type}"    # noqa
         org_objects_data = self.client.get(url)
         if isinstance(org_objects_data, list):
             org_objects.extend(org_objects_data)
         if isinstance(org_objects_data, dict):
             org_objects_list = org_objects_data.get(
-                                self.org_object_map.get(org_object_type).get('key'))
+                                self.org_object_map.get(org_object_type).get('key'))     # noqa
             for each_object in org_objects_list:
                 org_objects.append(
                     each_object.get(
@@ -94,7 +94,7 @@ class ApigeeNewGen():
             list: A list containing the env object details.
         """
         env_objects = []
-        url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object_type}"
+        url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object_type}"    # noqa pylint: disable=C0301
         env_objects = self.client.get(url)
         return env_objects
 
