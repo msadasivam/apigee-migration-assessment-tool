@@ -998,6 +998,9 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                             reason_str['violations'] = reason['violations']
 
                     validation_report_sheet.write(row, col, json.dumps(reason_str, indent=2))   # noqa pylint: disable=C0301
+                col += 1
+                if values['imported']:
+                    validation_report_sheet.write(row, col, values['imported'])   # noqa pylint: disable=C0301
                 row += 1
         validation_report_sheet.autofit()
 
