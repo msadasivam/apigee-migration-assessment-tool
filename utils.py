@@ -598,7 +598,10 @@ def read_proxy_artifacts(dir_name, entrypoint):
                 proxy_dict['ProxyEndpoints'][each_pe] = parse_xml(
                     os.path.join(dir_name, 'proxies', f"{each_pe}.xml"))
 
-            proxy_dict['BasePaths'] = api_proxy['Basepaths']
+            if api_proxy.get('Basepaths', None) is not None:
+                proxy_dict['BasePaths'] = api_proxy.get('Basepaths')
+            if api_proxy.get('BasePaths', None) is not None:
+                proxy_dict['BasePaths'] = api_proxy.get('BasePaths')
 
         if api_proxy.get('Policies') is not None:
             policies = api_proxy['Policies']['Policy']

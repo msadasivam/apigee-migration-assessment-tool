@@ -78,6 +78,7 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
         # Format to represent resource migration status
         self.danger_format = self.workbook.add_format({'bg_color': '#f5cbcc'})
         self.yellow_format = self.workbook.add_format({'bg_color': 'yellow'})
+        self.green_format = self.workbook.add_format({'bg_color': '#5fbd76'})
 
         # Information blue box formats
         self.info_format = self.workbook.add_format(
@@ -494,8 +495,11 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                 apps_without_products_sheet.write(
                     row, col, 'No Credentials Found')
             else:
-                products = value['credentials'][0]['apiProducts']
-                if len(products) == 0:
+                no_products = False
+                for each_cred in credentials:
+                    if len(each_cred.get('apiProducts', [])) == 0:
+                        no_products = True
+                if no_products:
                     col = 0
                     apps_without_products_sheet.write(row, col, self.org_name)   # noqa pylint: disable=C0301
                     # app name
@@ -507,7 +511,7 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                     # status
                     col += 1
                     apps_without_products_sheet.write(
-                        row, col, value['credentials'][0]['status'])
+                        row, col, 'No apiProducts associated')
 
         apps_without_products_sheet.autofit()
         # Info block
@@ -778,7 +782,7 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
             col += 1
             certs = 0
             for _, keystorecontent in value['keystores'].items():
-                certs = certs + len(keystorecontent['certs'])
+                certs = certs + len(keystorecontent['aliases'])
             env_limits_sheet.write(row, col, certs)
             # KVMs
             col += 1
@@ -987,7 +991,9 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                 validation_report_sheet.write(row, col, values['name'])
                 col += 1
                 if values['importable']:
-                    validation_report_sheet.write(row, col, values['importable'])   # noqa pylint: disable=C0301
+                    validation_report_sheet.write(row, col, values['importable'], self.green_format)   # noqa pylint: disable=C0301
+                    col += 1
+                    validation_report_sheet.write(row, col, 'N/A')
                 if not values['importable']:
                     validation_report_sheet.write(row, col, values['importable'], self.danger_format)   # noqa pylint: disable=C0301
                     col += 1
@@ -998,6 +1004,11 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                             reason_str['violations'] = reason['violations']
 
                     validation_report_sheet.write(row, col, json.dumps(reason_str, indent=2))   # noqa pylint: disable=C0301
+                col += 1
+                if 'imported' in values:
+                    validation_report_sheet.write(row, col, values['imported'])   # noqa pylint: disable=C0301
+                else:
+                    validation_report_sheet.write(row, col, 'UNKNOWN')
                 row += 1
         validation_report_sheet.autofit()
 

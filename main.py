@@ -122,7 +122,7 @@ def main():
 
     if (not report.get('report', False) or
             not export_data.get('validation_report', False)):
-        report = validate_artifacts(cfg, export_data)
+        report = validate_artifacts(cfg, resources_list, export_data)
         report['report'] = True
         export_data['validation_report'] = report
         write_json(export_data_file, export_data)

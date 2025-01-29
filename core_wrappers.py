@@ -44,7 +44,6 @@ Constants:
 """
 
 import os
-import json
 from pyvis.network import Network  # pylint: disable=E0401
 import networkx as nx  # pylint: disable=E0401
 from exporter import ApigeeExporter
@@ -55,7 +54,7 @@ from qualification_report import QualificationReport
 from topology import ApigeeTopology
 from utils import (
     create_dir, get_source_auth_token,
-    get_access_token, write_csv_report)
+    get_access_token)
 import sharding
 from base_logger import logger
 
@@ -203,7 +202,7 @@ def export_artifacts(cfg, resources_list):
     return export_data
 
 
-def validate_artifacts(cfg, export_data):  # noqa pylint: disable=R0914
+def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disable=R0914
     """Validates exported artifacts against the target environment.
 
     Validates the exported Apigee artifacts against the constraints of
@@ -225,12 +224,31 @@ def validate_artifacts(cfg, export_data):  # noqa pylint: disable=R0914
     report = {}
     target_dir = cfg.get('inputs', 'TARGET_DIR')
     export_dir = f"{target_dir}/{cfg.get('export', 'EXPORT_DIR')}"
+    target_export_dir = f"{target_dir}/target"
+    api_export_dir = f"{target_export_dir}/apis"
+    sf_export_dir = f"{target_export_dir}/sharedflows"
+    create_dir(api_export_dir)
+    create_dir(sf_export_dir)
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_env_type = cfg.get('inputs', 'GCP_ENV_TYPE',
                            fallback=DEFAULT_GCP_ENV_TYPE)
     gcp_token = get_access_token()
+    apigee_export = ApigeeExporter(
+        'https://apigee.googleapis.com/v1',
+        gcp_project_id,
+        gcp_token,
+        'oauth',
+        True
+    )
+    target_resources = ['targetservers', 'flowhooks', 'resourcefiles', 'apis', 'sharedflows']  # noqa pylint: disable=C0301
+    target_resource_list = []
+    if 'all' in resources_list:
+        target_resource_list = target_resources
+    else:
+        target_resource_list = [ r for r in resources_list if r in target_resources]  # noqa pylint: disable=C0301
 
-    apigee_validator = ApigeeValidator(gcp_project_id, gcp_token, gcp_env_type)
+    target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
+    apigee_validator = ApigeeValidator(gcp_project_id, gcp_token, gcp_env_type, target_export_data)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
         logger.info(f'Environment -- {env}')  # pylint: disable=W1203
@@ -238,9 +256,9 @@ def validate_artifacts(cfg, export_data):  # noqa pylint: disable=R0914
         resourcefiles = export_data['envConfig'][env]['resourcefiles']
         flowhooks = export_data['envConfig'][env]['flowhooks']
         report[env + SEPERATOR +
-               'targetServers'] = apigee_validator.validate_env_targetservers(target_servers)  # noqa pylint: disable=C0301
+               'targetServers'] = apigee_validator.validate_env_targetservers(env, target_servers)  # noqa pylint: disable=C0301
         report[env + SEPERATOR +
-               'resourcefiles'] = apigee_validator.validate_env_resourcefiles(resourcefiles)  # noqa pylint: disable=C0301
+               'resourcefiles'] = apigee_validator.validate_env_resourcefiles(env, resourcefiles)  # noqa pylint: disable=C0301
         report[env + SEPERATOR +
                'flowhooks'] = apigee_validator.validate_env_flowhooks(env, flowhooks)  # noqa
 
@@ -248,22 +266,6 @@ def validate_artifacts(cfg, export_data):  # noqa pylint: disable=R0914
     # Todo  # pylint: disable=W0511
     # validate proxy unifier output bundles
     report.update(validation)
-    report_header = ['Type', 'Name', 'Importable', 'Reason']
-    report_rows = []
-    for each_type, type_data in report.items():
-        for each_item in type_data:
-            report_rows.append(
-                [
-                    each_type,
-                    each_item.get('name', None),
-                    each_item.get('importable', None),
-                    "" if len(each_item.get('reason', [])) == 0 else json.dumps(   # noqa
-                        each_item.get('reason', []), indent=2)
-                ]
-            )
-
-    csv_report = cfg.get('validate', 'CSV_REPORT')
-    write_csv_report(f'{target_dir}/{csv_report}', report_header, report_rows)
     return report
 
 

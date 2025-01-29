@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python  # noqa pylint: disable=R0801
 
 # Copyright 2025 Google LLC
 #

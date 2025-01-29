@@ -36,6 +36,7 @@ offers methods to fetch dependency data, such as references.
 import os
 import json
 from classic import ApigeeClassic
+from nextgen import ApigeeNewGen
 from utils import create_dir, run_parallel, write_file, write_json
 from base_logger import logger
 
@@ -69,9 +70,13 @@ class ApigeeExporter():  # pylint: disable=R0902
         self.org = org
         self.token = token
         self.auth_type = auth_type
-        self.opdk = ApigeeClassic(baseurl, org,
-                                  token, self.auth_type,
-                                  ssl_verify=ssl_verify)
+        self.apigee = (ApigeeNewGen(org, token,
+                       'ENVIRONMENT_TYPE_UNSPECIFIED')
+                       if 'apigee.googleapis.com' in baseurl else
+                       ApigeeClassic(baseurl, org, token,
+                       self.auth_type, ssl_verify=ssl_verify))
+        self.apigee_type = ('x' if 'apigee.googleapis.com' in baseurl
+                            else 'edge')
         self.env_object_types = {
             'targetservers': 'targetServers',
             'keyvaluemaps': 'kvms',
@@ -89,6 +94,7 @@ class ApigeeExporter():  # pylint: disable=R0902
             'apps': 'apps',
             'resourcefiles': 'resourcefiles',
         }
+        self.unsupported_x_objects = ['resourcefiles', 'companies']
         self.export_data = {
             'orgConfig': {},
             'envConfig': {}
@@ -102,7 +108,7 @@ class ApigeeExporter():  # pylint: disable=R0902
         environment-specific configurations.
         """
         logger.info("--Exporting environments--")
-        envs = self.opdk.list_environments()
+        envs = self.apigee.list_environments()
 
         for env in envs:
             self.export_data['envConfig'][env] = {}
@@ -115,15 +121,19 @@ class ApigeeExporter():  # pylint: disable=R0902
         Stores the virtual host configuration in the
         export_data dictionary.
         """
-        envs = self.export_data['envConfig'].keys()
-        for env in envs:
-            self.export_data['envConfig'][env]['vhosts'] = {}
-            vhosts = self.opdk.list_env_vhosts(env)
-            for vhost in vhosts:
-                vhost_data = self.opdk.get_env_vhost(env, vhost)
-                self.export_data['envConfig'][env]['vhosts'][vhost] = vhost_data  # noqa
+        if self.apigee_type == 'x':
+            env_groups = self.apigee.list_env_groups()
+            self.export_data['orgConfig']['envgroups'] = env_groups
+        else:
+            envs = self.export_data['envConfig'].keys()
+            for env in envs:
+                self.export_data['envConfig'][env]['vhosts'] = {}
+                vhosts = self.apigee.list_env_vhosts(env)
+                for vhost in vhosts:
+                    vhost_data = self.apigee.get_env_vhost(env, vhost)
+                    self.export_data['envConfig'][env]['vhosts'][vhost] = vhost_data  # noqa
 
-    def export_env_objects(self, env_objects_keys, export_dir):
+    def export_env_objects(self, env_objects_keys, export_dir):    # noqa pylint: disable=R0912
         """Exports environment-level objects.
 
         Retrieves and exports various environment-level objects based
@@ -136,20 +146,24 @@ class ApigeeExporter():  # pylint: disable=R0902
                                         types to export.
             export_dir (str): The directory to export files to.
         """
-        for env in self.export_data.get('envConfig', {}):
+        for env in self.export_data.get('envConfig', {}):    # noqa pylint: disable=R1702
             for each_env_object_type in env_objects_keys:
-                env_objects = self.opdk.list_env_objects(
+                env_objects = self.apigee.list_env_objects(
                     env, each_env_object_type)
                 if each_env_object_type == 'resourcefiles':
                     logger.info("--Exporting Resourcefiles--")
+                    if self.apigee_type == 'x' and len(env_objects) == 0:
+                        env_objects['resourceFile'] = []
                     env_objects = env_objects['resourceFile']
                     for each_env_object in env_objects:
                         logger.info(      # noqa pylint: disable=W1203
                             f"Exporting Resourcefile {each_env_object['name']}")  # noqa
                         create_dir(
                             f"{export_dir}/resourceFiles/{each_env_object['type']}")    # noqa pylint: disable=W1203
-                        obj_data = self.opdk.get_env_object(
+                        obj_data = self.apigee.get_env_object(
                             env, each_env_object_type, each_env_object)
+                        obj_data = (obj_data if isinstance(obj_data, bytes)
+                                    else obj_data.encode('utf-8'))
                         write_file(
                             f"{export_dir}/resourceFiles/{each_env_object['type']}/{each_env_object['name']}", obj_data)  # noqa pylint: disable=C0301
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]][each_env_object['name']] = {  # noqa pylint: disable=C0301
@@ -164,20 +178,26 @@ class ApigeeExporter():  # pylint: disable=R0902
                         logger.info(f"Exporting keystore {each_env_object}")    # noqa pylint: disable=W1203
                         create_dir(
                             f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}")  # noqa pylint: disable=C0301
-                        obj_data = self.opdk.get_env_object(
+                        obj_data = self.apigee.get_env_object(
                             env, each_env_object_type, each_env_object)
                         obj_data['alias_data'] = {}
                         for alias in obj_data.get('aliases', []):
+                            if self.apigee_type == 'x':
+                                alias_name = alias
+                            else:
+                                alias_name = alias.get('aliasName')
                             create_dir(
-                                f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}/{alias.get('aliasName')}")  # noqa pylint: disable=C0301
-                            alias_data = self.opdk.get_env_object(
-                                env, f"keystores/{each_env_object}/aliases", alias.get('aliasName'))  # noqa pylint: disable=C0301
-                            certificate = self.opdk.get_env_object(
-                                env, f"keystores/{each_env_object}/aliases", f"{alias.get('aliasName')}/certificate")  # noqa pylint: disable=C0301
-                            with open(f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}/{alias.get('aliasName')}/certificate.pem", "wb") as f:  # noqa pylint: disable=C0301
-                                f.write(certificate)
-                            obj_data['alias_data'][alias.get(
-                                'aliasName')] = alias_data
+                                f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}/{alias_name}")  # noqa pylint: disable=C0301
+                            alias_data = self.apigee.get_env_object(
+                                env, f"keystores/{each_env_object}/aliases", alias_name)  # noqa pylint: disable=C0301
+                            certificate = self.apigee.get_env_object(
+                                env, f"keystores/{each_env_object}/aliases", f"{alias_name}/certificate")  # noqa pylint: disable=C0301
+                            with open(f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}/{alias_name}/certificate.pem", "wb") as f:  # noqa pylint: disable=C0301
+                                if isinstance(certificate, bytes):
+                                    f.write(certificate)
+                                else:
+                                    f.write(certificate.encode('utf-8'))
+                            obj_data['alias_data'][alias_name] = alias_data
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]  # noqa pylint: disable=C0301
                                                            ][each_env_object] = obj_data  # noqa pylint: disable=C0301
                 else:
@@ -185,8 +205,11 @@ class ApigeeExporter():  # pylint: disable=R0902
                     for each_env_object in env_objects:
                         logger.info(    # noqa pylint: disable=W1203
                             f"Exporting {each_env_object_type} {each_env_object}")  # noqa
-                        obj_data = self.opdk.get_env_object(
-                            env, each_env_object_type, each_env_object)
+                        if self.apigee_type == 'x' and each_env_object_type == 'keyvaluemaps':  # noqa pylint: disable=C0301
+                            obj_data = self.apigee.get_env_object(
+                                        env, each_env_object_type, f'{each_env_object}/entries')  # noqa pylint: disable=C0301
+                        else:
+                            obj_data = self.apigee.get_env_object(env, each_env_object_type, each_env_object)  # noqa pylint: disable=C0301
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]  # noqa pylint: disable=C0301
                                                            ][each_env_object] = obj_data  # noqa
 
@@ -205,16 +228,19 @@ class ApigeeExporter():  # pylint: disable=R0902
             logger.info(f"--Exporting org {each_org_object_type}--")    # noqa pylint: disable=W1203
             self.export_data['orgConfig'][self.org_object_types[each_org_object_type]] = {  # noqa
             }
+            if self.apigee_type == 'x' and each_org_object_type in self.unsupported_x_objects:  # noqa pylint: disable
+                continue
+
             if each_org_object_type == 'org_keyvaluemaps':
                 each_org_object_type = 'keyvaluemaps'
-            org_objects = self.opdk.list_org_objects(each_org_object_type)
+            org_objects = self.apigee.list_org_objects(each_org_object_type)
 
             if each_org_object_type == 'resourcefiles':
                 org_objects = org_objects['resourceFile']
                 for each_org_object in org_objects:
                     logger.info(    # noqa pylint: disable=W1203
                         f"Exporting {each_org_object_type} {each_org_object}")
-                    obj_data = self.opdk.get_org_object(
+                    obj_data = self.apigee.get_org_object(
                         each_org_object_type, each_org_object)
                     self.export_data['orgConfig'][self.org_object_types[each_org_object_type]][each_org_object['name']] = {  # noqa pylint: disable=C0301
                         'name': each_org_object['name'],
@@ -225,19 +251,23 @@ class ApigeeExporter():  # pylint: disable=R0902
                 for each_org_object in org_objects:
                     logger.info(    # noqa pylint: disable=W1203
                         f"Exporting {each_org_object_type} {each_org_object}")
-                    obj_data = self.opdk.get_org_object(
-                        each_org_object_type, each_org_object)
+                    if self.apigee_type == 'x':
+                        obj_data = self.apigee.get_org_object(
+                                    each_org_object_type, f'{each_org_object}/entries')  # noqa pylint: disable=C0301
+                    else:
+                        obj_data = self.apigee.get_org_object(
+                            each_org_object_type, each_org_object)
                     self.export_data['orgConfig'][self.org_object_types['org_keyvaluemaps']  # noqa
                                                   ][each_org_object] = obj_data
             else:
-                if each_org_object_type in self.opdk.can_expand:
+                if each_org_object_type in self.apigee.can_expand:
                     self.export_data['orgConfig'][self.org_object_types[each_org_object_type]  # noqa pylint: disable=C0301
-                                                    ] = self.opdk.list_org_objects_expand(each_org_object_type)   # noqa pylint: disable=C0301
+                                                    ] = self.apigee.list_org_objects_expand(each_org_object_type)   # noqa pylint: disable=C0301
                 else:
                     for each_org_object in org_objects:
                         logger.info(    # noqa pylint: disable=W1203
                             f"Exporting {each_org_object_type} {each_org_object}")  # noqa
-                        obj_data = self.opdk.get_org_object(
+                        obj_data = self.apigee.get_org_object(
                             each_org_object_type, each_org_object)
                         self.export_data['orgConfig'][self.org_object_types[each_org_object_type]][each_org_object] = obj_data  # noqa pylint: disable=C0301
 
@@ -247,10 +277,11 @@ class ApigeeExporter():  # pylint: disable=R0902
         Returns:
             dict: A dictionary of developers, keyed by developerId.
         """
-        developers = self.opdk.list_org_objects('developers')
+        developers = self.apigee.list_org_objects('developers')
         developers_dict = {}
         for developer in developers:
-            developer_data = self.opdk.get_org_object('developers', developer)
+            developer_data = self.apigee.get_org_object('developers',
+                                                        developer)
             developers_dict[developer_data['developerId']] = developer
         return developers_dict
 
@@ -265,16 +296,16 @@ class ApigeeExporter():  # pylint: disable=R0902
         """
         for each_api_type in api_types:
             logger.info(f"--Exporting {each_api_type} metadata--")    # noqa pylint: disable=W1203
-            apis = self.opdk.list_org_objects(each_api_type)
+            apis = self.apigee.list_org_objects(each_api_type)
 
             for each_api in apis:
                 logger.info(f"Exporting {each_api_type} {each_api}")    # noqa pylint: disable=W1203
                 # extract revisions
-                revs = self.opdk.list_api_revisions(each_api_type, each_api)
+                revs = self.apigee.list_api_revisions(each_api_type, each_api)
                 self.export_data['orgConfig'][each_api_type][each_api] = revs
 
                 # extract env level info
-                deployments = self.opdk.api_env_mapping(each_api_type, each_api)  # noqa
+                deployments = self.apigee.api_env_mapping(each_api_type, each_api)  # noqa
                 for env in deployments['environment']:
                     env_name = env.get('name')
                     revisions = []
@@ -298,11 +329,11 @@ class ApigeeExporter():  # pylint: disable=R0902
         """
         for each_api_type in api_types:
             logger.info(f"--Exporting {each_api_type} proxy bundle--")    # noqa pylint: disable=W1203
-            # apis=self.opdk.list_apis(each_api_type)
+            # apis=self.apigee.list_apis(each_api_type)
             apis = self.export_data['orgConfig'][each_api_type].keys()
             args = (
                 (each_api_type, api, f"{export_dir}/{each_api_type}") for api in apis)  # noqa
-            run_parallel(self.opdk.fetch_proxy, args)
+            run_parallel(self.apigee.fetch_proxy, args)
 
     def get_export_data(self, resources_list, export_dir):  # noqa pylint: disable=R0912
         """Orchestrates the export process.
@@ -335,6 +366,9 @@ class ApigeeExporter():  # pylint: disable=R0902
         env_objects = []
         org_objects = []
         api_types = []
+
+        if self.apigee_type == 'x':
+            self.org_object_types['envgroups'] = 'envgroups'
 
         if 'all' in resources_list:
             self.export_vhosts()
@@ -443,17 +477,17 @@ class ApigeeExporter():  # pylint: disable=R0902
         for dependency in dependencies:
             dependencies_data[dependency] = {}
             if dependency == 'references':
-                envs = self.opdk.list_environments()
+                envs = self.apigee.list_environments()
                 for env in envs:
                     dependencies_data[dependency][env] = {}
-                    references = self.opdk.list_env_objects(env, dependency)
+                    references = self.apigee.list_env_objects(env, dependency)
                     for reference in references:
-                        dependencies_data[dependency][env][reference] = self.opdk.get_env_object(  # noqa pylint: disable=C0301
+                        dependencies_data[dependency][env][reference] = self.apigee.get_env_object(  # noqa pylint: disable=C0301
                             env, dependency, reference)
             else:
-                org_objects = self.opdk.list_org_objects(dependency)
+                org_objects = self.apigee.list_org_objects(dependency)
                 for each_org_object in org_objects:
-                    dependencies_data[dependency][each_org_object] = self.opdk.get_org_object(  # noqa pylint: disable=C0301
+                    dependencies_data[dependency][each_org_object] = self.apigee.get_org_object(  # noqa pylint: disable=C0301
                         dependency, each_org_object)
 
         return dependencies_data
