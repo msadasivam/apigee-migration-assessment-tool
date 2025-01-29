@@ -622,8 +622,7 @@ def read_proxy_artifacts(dir_name, entrypoint):
                     os.path.join(dir_name, 'targets', f"{each_te}.xml"))
     except Exception as error: # noqa pylint: disable=W1203,W0718
         logger.error(f"Error: raised error in read_proxy_artifacts {error}")  # noqa pylint: disable=W1203
-    finally:
-        return proxy_dict
+    return proxy_dict
 
 
 def get_target_endpoints(proxy_endpoint_data):

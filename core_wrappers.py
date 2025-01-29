@@ -44,7 +44,6 @@ Constants:
 """
 
 import os
-import json
 from pyvis.network import Network  # pylint: disable=E0401
 import networkx as nx  # pylint: disable=E0401
 from exporter import ApigeeExporter

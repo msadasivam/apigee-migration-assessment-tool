@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python  # noqa pylint: disable=R0801
 
 # Copyright 2025 Google LLC
 #
@@ -24,7 +24,7 @@ from requests.utils import quote as urlencode  # pylint: disable=E0401
 from rest import RestClient
 
 
-class ApigeeNewGen():
+class ApigeeNewGen():   # noqa pylint: disable=R0902
     """A client for interacting with Apigee X or hybrid.
 
     Provides methods to interact with Apigee X or hybrid environments,
@@ -80,7 +80,7 @@ class ApigeeNewGen():
         """
         return self.list_org_objects('environments')
 
-    def _apigee_object_util(self, org_object, each_org_object_data, expand=False):
+    def _apigee_object_util(self, org_object, each_org_object_data, expand=False):  # noqa pylint: disable=C0301
         expand_key = self.can_expand.get(org_object).get('expand_key')
         id_key = self.can_expand.get(org_object).get('id')
         objects = []
@@ -111,19 +111,19 @@ class ApigeeNewGen():
             }
             start_url = f"{self.baseurl}/organizations/{self.project_id}/{org_object}"    # noqa
             each_org_object_data = self.client.get(start_url, params=params)
-            each_org_object = self._apigee_object_util(org_object, each_org_object_data)
+            each_org_object = self._apigee_object_util(org_object, each_org_object_data)  # noqa pylint: disable=C0301
             org_objects.extend(each_org_object)
             while len(each_org_object) > 0:
                 start_key = each_org_object[-1]
                 params[next_key] = start_key
-                each_org_object_data = self.client.get(start_url, params=params)
-                each_org_object = self._apigee_object_util(org_object, each_org_object_data)
+                each_org_object_data = self.client.get(start_url, params=params)  # noqa pylint: disable=C0301
+                each_org_object = self._apigee_object_util(org_object, each_org_object_data)  # noqa pylint: disable=C0301
                 each_org_object.remove(start_key)
                 org_objects.extend(each_org_object)
         else:
-            url = f"{self.baseurl}/organizations/{self.project_id}/{org_object}"
+            url = f"{self.baseurl}/organizations/{self.project_id}/{org_object}"  # noqa pylint: disable=C0301
             org_object_data = self.client.get(url)
-            org_objects.extend(self._apigee_object_util(org_object, org_object_data))
+            org_objects.extend(self._apigee_object_util(org_object, org_object_data))  # noqa pylint: disable=C0301
         return org_objects
 
     def list_org_objects_expand(self, org_object):
@@ -137,7 +137,7 @@ class ApigeeNewGen():
         expand_param = ['developers', 'apiproducts']
         next_key = self.requires_pagination.get(org_object, {}).get('next_key', None)  # noqa
         id_key = self.can_expand.get(org_object).get('id')
-        limit_key = self.requires_pagination.get(org_object, {}).get('limit', None)
+        limit_key = self.requires_pagination.get(org_object, {}).get('limit', None)  # noqa pylint: disable=C0301
         if next_key is None:
             params = {}
         else:
@@ -157,7 +157,7 @@ class ApigeeNewGen():
             start_key = each_org_object[-1].get(id_key)    # noqa
             params[next_key] = start_key    # noqa
             each_org_object_data = self.client.get(start_url, params=params)
-            each_org_object = self._apigee_object_util(org_object, each_org_object_data, True)    # noqa
+            each_org_object = self._apigee_object_util(org_object, each_org_object_data, True)       # noqa pylint: disable=C0301
             each_org_object.pop(0)
             for each_item in each_org_object:
                 org_objects[each_item[id_key]] = each_item
@@ -178,7 +178,7 @@ class ApigeeNewGen():
         if org_object == "resourcefiles":
             return {}
         org_object_name = urlencode(org_object_name)
-        url = f"{self.baseurl}/organizations/{self.project_id}/{org_object}/{org_object_name}"  # noqa
+        url = f"{self.baseurl}/organizations/{self.project_id}/{org_object}/{org_object_name}"     # noqa pylint: disable=C0301
         org_object = self.client.get(url)
         return org_object
 
@@ -261,7 +261,7 @@ class ApigeeNewGen():
         Returns:
             list: A list of revision numbers.
         """
-        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/revisions"  # noqa
+        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/revisions"     # noqa pylint: disable=C0301
         revisions = self.client.get(url)
         return revisions
 
@@ -276,7 +276,7 @@ class ApigeeNewGen():
         Returns:
             dict: A dictionary containing the deployment mapping.
         """
-        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/deployments"  # noqa
+        url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/deployments"     # noqa pylint: disable=C0301
         deployments_data = self.client.get(url)
         if len(deployments_data) == 0:
             return {'environment': []}
@@ -297,7 +297,7 @@ class ApigeeNewGen():
         Returns:
             list: A list of API names deployed in the environment.
         """
-        url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env_name}/deployments"  # noqa
+        url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env_name}/deployments"     # noqa pylint: disable=C0301
         deployments_data = self.client.get(url)
         deployments = deployments_data.get('deployments')
         apis_list = [api.get('apiProxy') for api in deployments]
@@ -315,7 +315,7 @@ class ApigeeNewGen():
         url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/revisions/{revision}?format=bundle"  # noqa pylint: disable=C0301
         bundle = self.client.file_get(url)
         self._write_proxy_bundle(export_dir, api_name, bundle)
-    
+
     def _write_proxy_bundle(self, export_dir, file_name, data):
         """Writes a proxy bundle to a file.
 

@@ -70,12 +70,13 @@ class ApigeeExporter():  # pylint: disable=R0902
         self.org = org
         self.token = token
         self.auth_type = auth_type
-        self.apigee = ( ApigeeNewGen(org, token, 'ENVIRONMENT_TYPE_UNSPECIFIED')
+        self.apigee = (ApigeeNewGen(org, token,
+                       'ENVIRONMENT_TYPE_UNSPECIFIED')
                        if 'apigee.googleapis.com' in baseurl else
-                        ApigeeClassic(baseurl, org,
-                                        token, self.auth_type,
-                                        ssl_verify=ssl_verify))
-        self.apigee_type = 'x' if 'apigee.googleapis.com' in baseurl else 'edge'
+                       ApigeeClassic(baseurl, org, token,
+                       self.auth_type, ssl_verify=ssl_verify))
+        self.apigee_type = ('x' if 'apigee.googleapis.com' in baseurl
+                            else 'edge')
         self.env_object_types = {
             'targetservers': 'targetServers',
             'keyvaluemaps': 'kvms',
@@ -132,7 +133,7 @@ class ApigeeExporter():  # pylint: disable=R0902
                     vhost_data = self.apigee.get_env_vhost(env, vhost)
                     self.export_data['envConfig'][env]['vhosts'][vhost] = vhost_data  # noqa
 
-    def export_env_objects(self, env_objects_keys, export_dir):
+    def export_env_objects(self, env_objects_keys, export_dir):    # noqa pylint: disable=R0912
         """Exports environment-level objects.
 
         Retrieves and exports various environment-level objects based
@@ -145,7 +146,7 @@ class ApigeeExporter():  # pylint: disable=R0902
                                         types to export.
             export_dir (str): The directory to export files to.
         """
-        for env in self.export_data.get('envConfig', {}):
+        for env in self.export_data.get('envConfig', {}):    # noqa pylint: disable=R1702
             for each_env_object_type in env_objects_keys:
                 env_objects = self.apigee.list_env_objects(
                     env, each_env_object_type)
@@ -161,7 +162,8 @@ class ApigeeExporter():  # pylint: disable=R0902
                             f"{export_dir}/resourceFiles/{each_env_object['type']}")    # noqa pylint: disable=W1203
                         obj_data = self.apigee.get_env_object(
                             env, each_env_object_type, each_env_object)
-                        obj_data = obj_data if isinstance(obj_data,bytes) else obj_data.encode('utf-8')
+                        obj_data = (obj_data if isinstance(obj_data, bytes)
+                                    else obj_data.encode('utf-8'))
                         write_file(
                             f"{export_dir}/resourceFiles/{each_env_object['type']}/{each_env_object['name']}", obj_data)  # noqa pylint: disable=C0301
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]][each_env_object['name']] = {  # noqa pylint: disable=C0301
@@ -191,7 +193,10 @@ class ApigeeExporter():  # pylint: disable=R0902
                             certificate = self.apigee.get_env_object(
                                 env, f"keystores/{each_env_object}/aliases", f"{alias_name}/certificate")  # noqa pylint: disable=C0301
                             with open(f"{export_dir}/keystore_certificates/env-{env}/{each_env_object}/{alias_name}/certificate.pem", "wb") as f:  # noqa pylint: disable=C0301
-                                f.write(certificate) if isinstance(certificate, bytes) else f.write(certificate.encode('utf-8'))
+                                if isinstance(certificate, bytes):
+                                    f.write(certificate)
+                                else:
+                                    f.write(certificate.encode('utf-8'))
                             obj_data['alias_data'][alias_name] = alias_data
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]  # noqa pylint: disable=C0301
                                                            ][each_env_object] = obj_data  # noqa pylint: disable=C0301
@@ -200,12 +205,11 @@ class ApigeeExporter():  # pylint: disable=R0902
                     for each_env_object in env_objects:
                         logger.info(    # noqa pylint: disable=W1203
                             f"Exporting {each_env_object_type} {each_env_object}")  # noqa
-                        if self.apigee_type == 'x' and each_env_object_type == 'keyvaluemaps':
+                        if self.apigee_type == 'x' and each_env_object_type == 'keyvaluemaps':  # noqa pylint: disable=C0301
                             obj_data = self.apigee.get_env_object(
-                                        env, each_env_object_type, f'{each_env_object}/entries')
+                                        env, each_env_object_type, f'{each_env_object}/entries')  # noqa pylint: disable=C0301
                         else:
-                            obj_data = self.apigee.get_env_object(
-                            env, each_env_object_type, each_env_object)
+                            obj_data = self.apigee.get_env_object(env, each_env_object_type, each_env_object)  # noqa pylint: disable=C0301
                         self.export_data['envConfig'][env][self.env_object_types[each_env_object_type]  # noqa pylint: disable=C0301
                                                            ][each_env_object] = obj_data  # noqa
 
@@ -249,7 +253,7 @@ class ApigeeExporter():  # pylint: disable=R0902
                         f"Exporting {each_org_object_type} {each_org_object}")
                     if self.apigee_type == 'x':
                         obj_data = self.apigee.get_org_object(
-                                    each_org_object_type, f'{each_org_object}/entries')
+                                    each_org_object_type, f'{each_org_object}/entries')  # noqa pylint: disable=C0301
                     else:
                         obj_data = self.apigee.get_org_object(
                             each_org_object_type, each_org_object)
@@ -276,7 +280,8 @@ class ApigeeExporter():  # pylint: disable=R0902
         developers = self.apigee.list_org_objects('developers')
         developers_dict = {}
         for developer in developers:
-            developer_data = self.apigee.get_org_object('developers', developer)
+            developer_data = self.apigee.get_org_object('developers',
+                                                        developer)
             developers_dict[developer_data['developerId']] = developer
         return developers_dict
 
