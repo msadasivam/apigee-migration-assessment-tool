@@ -2,7 +2,20 @@
 
 [![Build Status](https://github.com/apigee/apigee-migration-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/apigee/apigee-migration-assessment-tool/actions/workflows/tests.yml)
 
-This tool helps you plan your migration from Apigee Edge (OPDK or SaaS) to Apigee X/Hybrid by analyzing your source environment and generating a report.
+This tool helps you plan your migration from Apigee Edge / Apigee X / Apigee Hybrid to Apigee X/Hybrid by analyzing your source environment and generating a report.
+
+Below table shows the supported assessment scenarios.
+
+## Assessment Scenarios
+
+| Source Apigee  | Target Apigee |
+| -------- | ------- |
+| Apigee Edge SAAS  | Apigee X |
+| Apigee Edge SAAS  | Apigee Hybrid |
+| Apigee Edge OPDK  | Apigee X |
+| Apigee Edge OPDK  | Apigee Hybrid |
+| Apigee Hybrid  | Apigee X |
+| Apigee X  | Apigee Hybrid |
 
 ## Prerequisites
 
@@ -116,7 +129,7 @@ You can run this tool locally or using Docker.
     | `input`  | `TARGET_DIR`    | Name of directory to export apigee objects |
     | `input`  | `SSL_VERIFICATION`    | Set to `false` , to ignore SSL verification else set it to `true`|
 
-2. **Generate Apigee Edge SAAS/OPDK Auth Tokens:**
+2. **Generate Apigee Edge SAAS/OPDK/X/Hybrud Auth Tokens:**
 
     * Basic Auth:
     ```bash
@@ -124,11 +137,15 @@ You can run this tool locally or using Docker.
     ```
     *  OAuth2/SAML:
     
-    Refer to the [Apigee documentation](https://docs.apigee.com/api-platform/system-administration/management-api-overview) for generating OAuth2 tokens.
-    ```bash
-    export SSO_LOGIN_URL=https://login.apigee.com  # Example
-    export SOURCE_AUTH_TOKEN=$(get_token -u <user>:<password> -m xxxx) # Example using a helper script
-    ```
+        - For Apigee Edge [Apigee Edge Management API documentation](https://docs.apigee.com/api-platform/system-administration/management-api-overview) for generating OAuth2 tokens.
+        ```bash
+        export SSO_LOGIN_URL=https://login.apigee.com  # Example
+        export SOURCE_AUTH_TOKEN=$(get_token -u <user>:<password> -m xxxx) # Example using a helper script
+        ```
+        - For Apigee X/Hybrid as source
+        ```bash
+        export SOURCE_AUTH_TOKEN=$(gcloud auth print-access-token)
+        ```
 
 3. **Generate Apigee X/Hybrid Auth Tokens:**
     ```bash
