@@ -598,7 +598,10 @@ def read_proxy_artifacts(dir_name, entrypoint):
                 proxy_dict['ProxyEndpoints'][each_pe] = parse_xml(
                     os.path.join(dir_name, 'proxies', f"{each_pe}.xml"))
 
-            proxy_dict['BasePaths'] = api_proxy['Basepaths']
+            if api_proxy.get('Basepaths', None) is not None:
+                proxy_dict['BasePaths'] = api_proxy.get('Basepaths')
+            if api_proxy.get('BasePaths', None) is not None:
+                proxy_dict['BasePaths'] = api_proxy.get('BasePaths')
 
         if api_proxy.get('Policies') is not None:
             policies = api_proxy['Policies']['Policy']
@@ -619,7 +622,8 @@ def read_proxy_artifacts(dir_name, entrypoint):
                     os.path.join(dir_name, 'targets', f"{each_te}.xml"))
     except Exception as error: # noqa pylint: disable=W1203,W0718
         logger.error(f"Error: raised error in read_proxy_artifacts {error}")  # noqa pylint: disable=W1203
-    return proxy_dict
+    finally:
+        return proxy_dict
 
 
 def get_target_endpoints(proxy_endpoint_data):

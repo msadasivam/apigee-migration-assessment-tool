@@ -495,8 +495,11 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                 apps_without_products_sheet.write(
                     row, col, 'No Credentials Found')
             else:
-                products = value['credentials'][0]['apiProducts']
-                if len(products) == 0:
+                no_products = False
+                for each_cred in credentials:
+                    if len(each_cred.get('apiProducts', [])) == 0:
+                        no_products = True
+                if no_products:
                     col = 0
                     apps_without_products_sheet.write(row, col, self.org_name)   # noqa pylint: disable=C0301
                     # app name
@@ -508,7 +511,7 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                     # status
                     col += 1
                     apps_without_products_sheet.write(
-                        row, col, value['credentials'][0]['status'])
+                        row, col, 'No apiProducts associated')
 
         apps_without_products_sheet.autofit()
         # Info block
@@ -779,7 +782,7 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
             col += 1
             certs = 0
             for _, keystorecontent in value['keystores'].items():
-                certs = certs + len(keystorecontent['certs'])
+                certs = certs + len(keystorecontent['aliases'])
             env_limits_sheet.write(row, col, certs)
             # KVMs
             col += 1

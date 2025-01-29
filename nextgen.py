@@ -278,8 +278,15 @@ class ApigeeNewGen():
         """
         url = f"{self.baseurl}/organizations/{self.project_id}/{api_type}/{api_name}/deployments"  # noqa
         deployments_data = self.client.get(url)
-        deployments = deployments_data.get('deployments')
-        return deployments
+        if len(deployments_data) == 0:
+            return {'environment': []}
+        formatted_deployments = []
+        for dep in deployments_data.get('deployments'):
+            formatted_deployments.append({
+                'name': dep.get('environment'),
+                'revision': [{'name': dep.get('revision')}]
+            })
+        return {'environment': formatted_deployments}
 
     def list_apis_env(self, env_name):
         """Lists APIs deployed in a specific environment.
