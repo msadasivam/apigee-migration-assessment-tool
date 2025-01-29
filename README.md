@@ -99,12 +99,13 @@ You can run this tool locally or using Docker.
     Please find sample inputs in the `sample/inputs` folder
     * [sample opdk input](sample/inputs/opdk.input.properties)
     * [sample saas input](sample/inputs/saas.input.properties)
+    * [sample x/hybrid input](sample/inputs/x.input.properties)
 
     Refer the below table to set the required inputs in the `input` section of `input.properties` file.
 
     | Section  | Input   | Description |
     | -------- | ------- | ------- |
-    | `input`  | `SOURCE_URL`    | Apigee OPDK/Edge Management URL |
+    | `input`  | `SOURCE_URL`    | Apigee OPDK/Edge/X/Hybrid Management URL |
     | `input`  | `SOURCE_ORG`     | Apigee OPDK/Edge Organization|
     | `input`  | `SOURCE_AUTH_TYPE`    | Apigee OPDK/Edge auth type , `basic` OR `oauth`|
     | `input`  | `SOURCE_UI_URL`    | Apigee OPDK/Edge UI URL, use default|

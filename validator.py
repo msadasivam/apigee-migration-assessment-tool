@@ -40,7 +40,7 @@ class ApigeeValidator():
     rules and compatibility checks.
     """
 
-    def __init__(self, project_id, token, env_type):
+    def __init__(self, project_id, token, env_type, target_export_data):
         """Initializes ApigeeValidator.
 
         Args:
@@ -51,8 +51,9 @@ class ApigeeValidator():
         """
         self.project_id = project_id
         self.xorhybrid = ApigeeNewGen(project_id, token, env_type)
+        self.target_export_data = target_export_data
 
-    def validate_env_targetservers(self, target_servers):
+    def validate_env_targetservers(self, env, target_servers):
         """Validates environment target servers.
 
         Args:
@@ -68,6 +69,11 @@ class ApigeeValidator():
         for _, target_server_data in target_servers.items():
             obj = copy.copy(target_server_data)
             obj['importable'], obj['reason'] = self.validate_env_targetserver_resource(target_server_data)   # noqa pylint: disable=C0301
+            ts = self.target_export_data.get('envConfig', {}).get(env, {}).get('targetServers', {}).keys()    # noqa pylint: disable=C0301
+            if target_server_data['name'] in ts:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
             validation_targetservers.append(obj)
         return validation_targetservers
 
@@ -95,7 +101,7 @@ class ApigeeValidator():
             return True, []
         return False, errors
 
-    def validate_env_resourcefiles(self, resourcefiles):
+    def validate_env_resourcefiles(self, env, resourcefiles):
         """Validates environment resource files.
 
         Args:
@@ -111,6 +117,11 @@ class ApigeeValidator():
         for resourcefile in resourcefiles.keys():
             obj = copy.copy(resourcefiles[resourcefile])
             obj['importable'], obj['reason'] = self.validate_env_resourcefile_resource(resourcefiles[resourcefile])    # noqa pylint: disable=C0301
+            rf = self.target_export_data.get('envConfig', {}).get(env, {}).get('resourcefiles', {}).keys()    # noqa pylint: disable=C0301
+            if resourcefile in rf:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
             validation_rfiles.append(obj)
         return validation_rfiles
 
@@ -147,8 +158,8 @@ class ApigeeValidator():
             dict: Validation results for APIs and
                 sharedflows.
         """
-        apis = self.xorhybrid.list_org_objects('apis')
-        sharedflows = self.xorhybrid.list_org_objects('sharedflows')
+        apis = self.target_export_data.get('orgConfig', {}).get('apis', {}).keys()    # noqa pylint: disable=C0301
+        sharedflows = self.target_export_data.get('orgConfig', {}).get('sharedflows', {}).keys()    # noqa pylint: disable=C0301
         apis_sf_list = {'apis': apis, 'sharedflows': sharedflows}
         validation = {'apis': [], 'sharedflows': []}
         for each_api_type in ['apis', 'sharedflows']:
@@ -208,6 +219,11 @@ class ApigeeValidator():
             obj = copy.copy(flowhooks[flowhook])
             obj['name'] = flowhook
             obj['importable'], obj['reason'] = self.validate_env_flowhooks_resource(env, flowhooks[flowhook])   # noqa pylint: disable=C0301
+            fh = self.target_export_data.get('envConfig', {}).get(env, {}).get('flowhooks', {}).keys()    # noqa pylint: disable=C0301
+            if flowhook in fh:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
             validation_flowhooks.append(obj)
         return validation_flowhooks
 
