@@ -285,15 +285,15 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         apps = export_data['orgConfig']['apps']
         report['apps'] = apigee_validator.validate_org_resource('apps', apps)
     if 'all' in resources_list or 'apis' in resources_list:
-        validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')
+        apis_validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
-        report.update(validation)
+        report.update(apis_validation)
     if 'all' in resources_list or 'sharedflows' in resources_list:
-        validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')
+        sf_validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
-        report.update(validation)
+        report.update(sf_validation)
     return report
 
 
@@ -327,12 +327,15 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
     # Process the report
     final_report = {}
     for res, val in report.items():
-        final_report[res] = {}
-        for i in val:
-            if i.get('importable', False):
-                final_report[res][i['name']] = i['importable']
-            else:
-                final_report[res][i['name']] = i['reason']
+        if res in ['targetservers', 'flowhooks', 'resourcefiles',
+                        'apis', 'sharedflows', 'org_keyvaluemaps',
+                        'keyvaluemaps']:
+            final_report[res] = {}
+            for i in val:
+                if i.get('importable', False):
+                    final_report[res][i['name']] = i['importable']
+                else:
+                    final_report[res][i['name']] = i['reason']
 
     # Org level resources
     org_url = source_ui_url + source_url

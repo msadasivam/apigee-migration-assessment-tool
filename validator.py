@@ -210,13 +210,12 @@ class ApigeeValidator():
                 sharedflows.
         """
         objects = self.target_export_data.get('orgConfig', {}).get(api_type, {}).keys()    # noqa pylint: disable=C0301
-        objects_list = {api_type: objects}
-        validation = {'apis': [], 'sharedflows': []}
+        validation = {api_type: []}
         bundle_dir = f"{export_dir}/{api_type}"
         for proxy_bundle in list_dir(bundle_dir):
             each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
             api_name = proxy_bundle.split(".zip")[0]
-            if api_name in objects_list[api_type]:
+            if api_name in objects:
                 each_validation['imported'] = True
             else:
                 each_validation['imported'] = False
