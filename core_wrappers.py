@@ -255,13 +255,18 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         target_servers = export_data['envConfig'][env]['targetServers']
         resourcefiles = export_data['envConfig'][env]['resourcefiles']
         flowhooks = export_data['envConfig'][env]['flowhooks']
+        keyvaluemaps = export_data['envConfig'][env]['kvms']
         report[env + SEPERATOR +
                'targetServers'] = apigee_validator.validate_env_targetservers(env, target_servers)  # noqa pylint: disable=C0301
         report[env + SEPERATOR +
                'resourcefiles'] = apigee_validator.validate_env_resourcefiles(env, resourcefiles)  # noqa pylint: disable=C0301
         report[env + SEPERATOR +
                'flowhooks'] = apigee_validator.validate_env_flowhooks(env, flowhooks)  # noqa
+        report[env + SEPERATOR +
+               'keyvaluemaps'] = apigee_validator.validate_kvms(env, keyvaluemaps)  # noqa
 
+    org_keyvaluemaps = export_data['orgConfig']['kvms']
+    report['org_keyvaluemaps'] = apigee_validator.validate_kvms(None, org_keyvaluemaps)  # noqa
     validation = apigee_validator.validate_proxy_bundles(export_dir)
     # Todo  # pylint: disable=W0511
     # validate proxy unifier output bundles

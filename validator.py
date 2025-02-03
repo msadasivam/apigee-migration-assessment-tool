@@ -53,6 +53,33 @@ class ApigeeValidator():
         self.xorhybrid = ApigeeNewGen(project_id, token, env_type)
         self.target_export_data = target_export_data
 
+    def validate_kvms(self, env, keyvaluemaps):
+        """Validates environment keyvaluemaps.
+
+        Args:
+            env (str): Environment name.
+            keyvaluemaps (dict): A dictionary of target
+                server configurations.
+
+        Returns:
+            list: A list of validated keyvaluemaps
+                objects with importability status and
+                reasons.
+        """
+        validation_kvms = []
+        if env is not None:
+            kvms = self.target_export_data.get('envConfig', {}).get(env, {}).get('kvms', {}).keys()    # noqa pylint: disable=C0301
+        else:
+            kvms = self.target_export_data.get('orgConfig', {}).get('kvms', {}).keys()    # noqa pylint: disable=C0301
+        for each_kvm, obj in keyvaluemaps.items():
+            obj['importable'], obj['reason'] = True, []
+            if each_kvm in kvms:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
+            validation_kvms.append(obj)
+        return validation_kvms
+
     def validate_env_targetservers(self, env, target_servers):
         """Validates environment target servers.
 
@@ -66,10 +93,10 @@ class ApigeeValidator():
                 reasons.
         """
         validation_targetservers = []
+        ts = self.target_export_data.get('envConfig', {}).get(env, {}).get('targetServers', {}).keys()    # noqa pylint: disable=C0301
         for _, target_server_data in target_servers.items():
             obj = copy.copy(target_server_data)
             obj['importable'], obj['reason'] = self.validate_env_targetserver_resource(target_server_data)   # noqa pylint: disable=C0301
-            ts = self.target_export_data.get('envConfig', {}).get(env, {}).get('targetServers', {}).keys()    # noqa pylint: disable=C0301
             if target_server_data['name'] in ts:
                 obj['imported'] = True
             else:
@@ -114,10 +141,10 @@ class ApigeeValidator():
                 reasons.
         """
         validation_rfiles = []
+        rf = self.target_export_data.get('envConfig', {}).get(env, {}).get('resourcefiles', {}).keys()    # noqa pylint: disable=C0301
         for resourcefile in resourcefiles.keys():
             obj = copy.copy(resourcefiles[resourcefile])
             obj['importable'], obj['reason'] = self.validate_env_resourcefile_resource(resourcefiles[resourcefile])    # noqa pylint: disable=C0301
-            rf = self.target_export_data.get('envConfig', {}).get(env, {}).get('resourcefiles', {}).keys()    # noqa pylint: disable=C0301
             if resourcefile in rf:
                 obj['imported'] = True
             else:
