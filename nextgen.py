@@ -87,7 +87,7 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
         if isinstance(each_org_object_data, list):
             objects.extend(each_org_object_data)
         if isinstance(each_org_object_data, dict):
-            org_objects_list = each_org_object_data.get(expand_key)
+            org_objects_list = each_org_object_data.get(expand_key, [])
             for each_object in org_objects_list:
                 if expand:
                     objects.append(each_object)
