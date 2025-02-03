@@ -240,7 +240,10 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         'oauth',
         True
     )
-    target_resources = ['targetservers', 'flowhooks', 'resourcefiles', 'apis', 'sharedflows']  # noqa pylint: disable=C0301
+    target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
+                        'apis', 'sharedflows', 'org_keyvaluemaps',
+                        'keyvaluemaps', 'apps', 'apiproducts',
+                        'developers']
     target_resource_list = []
     if 'all' in resources_list:
         target_resource_list = target_resources
@@ -256,21 +259,41 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         resourcefiles = export_data['envConfig'][env]['resourcefiles']
         flowhooks = export_data['envConfig'][env]['flowhooks']
         keyvaluemaps = export_data['envConfig'][env]['kvms']
-        report[env + SEPERATOR +
-               'targetServers'] = apigee_validator.validate_env_targetservers(env, target_servers)  # noqa pylint: disable=C0301
-        report[env + SEPERATOR +
+        if 'all' in resources_list or 'keyvaluemaps' in resources_list:
+            report[env + SEPERATOR +
+                'targetServers'] = apigee_validator.validate_env_targetservers(env, target_servers)  # noqa pylint: disable=C0301
+        if 'all' in resources_list or 'resourcefiles' in resources_list:
+            report[env + SEPERATOR +
                'resourcefiles'] = apigee_validator.validate_env_resourcefiles(env, resourcefiles)  # noqa pylint: disable=C0301
-        report[env + SEPERATOR +
+        if 'all' in resources_list or 'flowhooks' in resources_list:
+            report[env + SEPERATOR +
                'flowhooks'] = apigee_validator.validate_env_flowhooks(env, flowhooks)  # noqa
-        report[env + SEPERATOR +
+        if 'all' in resources_list or 'keyvaluemaps' in resources_list:
+            report[env + SEPERATOR +
                'keyvaluemaps'] = apigee_validator.validate_kvms(env, keyvaluemaps)  # noqa
 
-    org_keyvaluemaps = export_data['orgConfig']['kvms']
-    report['org_keyvaluemaps'] = apigee_validator.validate_kvms(None, org_keyvaluemaps)  # noqa
-    validation = apigee_validator.validate_proxy_bundles(export_dir)
-    # Todo  # pylint: disable=W0511
-    # validate proxy unifier output bundles
-    report.update(validation)
+    if 'all' in resources_list or 'org_keyvaluemaps' in resources_list:
+        org_keyvaluemaps = export_data['orgConfig']['kvms']
+        report['org_keyvaluemaps'] = apigee_validator.validate_kvms(None, org_keyvaluemaps)  # noqa
+    if 'all' in resources_list or 'developers' in resources_list:
+        developers = export_data['orgConfig']['developers']
+        report['developers'] = apigee_validator.validate_org_resource('developers', developers)
+    if 'all' in resources_list or 'apiproducts' in resources_list:
+        apiProducts = export_data['orgConfig']['apiProducts']
+        report['apiProducts'] = apigee_validator.validate_org_resource('apiProducts', apiProducts)
+    if 'all' in resources_list or 'apps' in resources_list:
+        apps = export_data['orgConfig']['apps']
+        report['apps'] = apigee_validator.validate_org_resource('apps', apps)
+    if 'all' in resources_list or 'apis' in resources_list:
+        validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')
+        # Todo  # pylint: disable=W0511
+        # validate proxy unifier output bundles
+        report.update(validation)
+    if 'all' in resources_list or 'sharedflows' in resources_list:
+        validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')
+        # Todo  # pylint: disable=W0511
+        # validate proxy unifier output bundles
+        report.update(validation)
     return report
 
 

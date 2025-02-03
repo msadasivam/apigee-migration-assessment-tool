@@ -53,6 +53,30 @@ class ApigeeValidator():
         self.xorhybrid = ApigeeNewGen(project_id, token, env_type)
         self.target_export_data = target_export_data
 
+    def validate_org_resource(self, resource_type, resources):
+        """Validates environment keyvaluemaps.
+
+        Args:
+            env (str): Environment name.
+            keyvaluemaps (dict): A dictionary of target
+                server configurations.
+
+        Returns:
+            list: A list of validated keyvaluemaps
+                objects with importability status and
+                reasons.
+        """
+        validation_resources = []
+        target_resources = self.target_export_data.get('orgConfig', {}).get(resource_type, {}).keys()    # noqa pylint: disable=C0301
+        for each_obj, obj in resources.items():
+            obj['importable'], obj['reason'] = True, []
+            if each_obj in target_resources:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
+            validation_resources.append(obj)
+        return validation_resources
+
     def validate_kvms(self, env, keyvaluemaps):
         """Validates environment keyvaluemaps.
 
@@ -174,7 +198,7 @@ class ApigeeValidator():
             return True, []
         return False, errors
 
-    def validate_proxy_bundles(self, export_dir):
+    def validate_proxy_bundles(self, export_dir, api_type):
         """Validates proxy bundles.
 
         Args:
@@ -185,20 +209,18 @@ class ApigeeValidator():
             dict: Validation results for APIs and
                 sharedflows.
         """
-        apis = self.target_export_data.get('orgConfig', {}).get('apis', {}).keys()    # noqa pylint: disable=C0301
-        sharedflows = self.target_export_data.get('orgConfig', {}).get('sharedflows', {}).keys()    # noqa pylint: disable=C0301
-        apis_sf_list = {'apis': apis, 'sharedflows': sharedflows}
+        objects = self.target_export_data.get('orgConfig', {}).get(api_type, {}).keys()    # noqa pylint: disable=C0301
+        objects_list = {api_type: objects}
         validation = {'apis': [], 'sharedflows': []}
-        for each_api_type in ['apis', 'sharedflows']:
-            bundle_dir = f"{export_dir}/{each_api_type}"
-            for proxy_bundle in list_dir(bundle_dir):
-                each_validation = self.validate_proxy(bundle_dir, each_api_type, proxy_bundle)    # noqa pylint: disable=C0301
-                api_name = proxy_bundle.split(".zip")[0]
-                if api_name in apis_sf_list[each_api_type]:
-                    each_validation['imported'] = True
-                else:
-                    each_validation['imported'] = False
-                validation[each_api_type].append(each_validation)
+        bundle_dir = f"{export_dir}/{api_type}"
+        for proxy_bundle in list_dir(bundle_dir):
+            each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
+            api_name = proxy_bundle.split(".zip")[0]
+            if api_name in objects_list[api_type]:
+                each_validation['imported'] = True
+            else:
+                each_validation['imported'] = False
+            validation[api_type].append(each_validation)
         return validation
 
     @retry()
