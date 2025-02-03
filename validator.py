@@ -69,6 +69,8 @@ class ApigeeValidator():
         validation_resources = []
         target_resources = self.target_export_data.get('orgConfig', {}).get(resource_type, {}).keys()    # noqa pylint: disable=C0301
         for each_obj, obj in resources.items():
+            if resource_type == 'developers':
+                obj['name'] = each_obj
             obj['importable'], obj['reason'] = True, []
             if each_obj in target_resources:
                 obj['imported'] = True

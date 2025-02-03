@@ -327,15 +327,12 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
     # Process the report
     final_report = {}
     for res, val in report.items():
-        if res in ['targetservers', 'flowhooks', 'resourcefiles',
-                        'apis', 'sharedflows', 'org_keyvaluemaps',
-                        'keyvaluemaps']:
-            final_report[res] = {}
-            for i in val:
-                if i.get('importable', False):
-                    final_report[res][i['name']] = i['importable']
-                else:
-                    final_report[res][i['name']] = i['reason']
+        final_report[res] = {}
+        for i in val:
+            if i.get('importable', False):
+                final_report[res][i['name']] = i['importable']
+            else:
+                final_report[res][i['name']] = i['reason']
 
     # Org level resources
     org_url = source_ui_url + source_url
