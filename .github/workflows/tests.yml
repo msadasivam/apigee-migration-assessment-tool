@@ -108,6 +108,7 @@ jobs:
       id-token: write
       contents: write # needed to publish sbom
       packages: write
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
