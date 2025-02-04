@@ -50,6 +50,12 @@ def parse_config(config_file):
     """
     config = configparser.ConfigParser()
     config.read(config_file)
+    if len(config.sections()) == 0:
+        logger.error(
+        'Unable to read input.properties file.')   # noqa pylint: disable=C0301
+        logger.error(
+        'Check if input.properties file exists OR if you permissions to view it')   # noqa pylint: disable=C0301
+        sys.exit(1)
     return config
 
 

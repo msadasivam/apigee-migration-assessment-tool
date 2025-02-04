@@ -53,6 +53,61 @@ class ApigeeValidator():
         self.xorhybrid = ApigeeNewGen(project_id, token, env_type)
         self.target_export_data = target_export_data
 
+    def validate_org_resource(self, resource_type, resources):
+        """Validates environment keyvaluemaps.
+
+        Args:
+            env (str): Environment name.
+            keyvaluemaps (dict): A dictionary of target
+                server configurations.
+
+        Returns:
+            list: A list of validated keyvaluemaps
+                objects with importability status and
+                reasons.
+        """
+        validation_resources = []
+        target_resources = self.target_export_data.get('orgConfig', {}).get(resource_type, {}).keys()    # noqa pylint: disable=C0301
+        for each_obj, obj in resources.items():
+            if resource_type == 'developers':
+                obj['name'] = each_obj
+            obj['importable'], obj['reason'] = True, []
+            if each_obj in target_resources:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
+            validation_resources.append(obj)
+        return validation_resources
+
+    def validate_kvms(self, env, keyvaluemaps):
+        """Validates environment keyvaluemaps.
+
+        Args:
+            env (str): Environment name.
+            keyvaluemaps (dict): A dictionary of target
+                server configurations.
+
+        Returns:
+            list: A list of validated keyvaluemaps
+                objects with importability status and
+                reasons.
+        """
+        validation_kvms = []
+        if env is not None:
+            kvms = self.target_export_data.get('envConfig', {}).get(env, {}).get('kvms', {}).keys()    # noqa pylint: disable=C0301
+        else:
+            kvms = self.target_export_data.get('orgConfig', {}).get('kvms', {}).keys()    # noqa pylint: disable=C0301
+        for each_kvm, obj in keyvaluemaps.items():
+            if 'name' not in obj:
+                obj['name'] = each_kvm
+            obj['importable'], obj['reason'] = True, []
+            if each_kvm in kvms:
+                obj['imported'] = True
+            else:
+                obj['imported'] = False
+            validation_kvms.append(obj)
+        return validation_kvms
+
     def validate_env_targetservers(self, env, target_servers):
         """Validates environment target servers.
 
@@ -66,10 +121,10 @@ class ApigeeValidator():
                 reasons.
         """
         validation_targetservers = []
+        ts = self.target_export_data.get('envConfig', {}).get(env, {}).get('targetServers', {}).keys()    # noqa pylint: disable=C0301
         for _, target_server_data in target_servers.items():
             obj = copy.copy(target_server_data)
             obj['importable'], obj['reason'] = self.validate_env_targetserver_resource(target_server_data)   # noqa pylint: disable=C0301
-            ts = self.target_export_data.get('envConfig', {}).get(env, {}).get('targetServers', {}).keys()    # noqa pylint: disable=C0301
             if target_server_data['name'] in ts:
                 obj['imported'] = True
             else:
@@ -114,10 +169,10 @@ class ApigeeValidator():
                 reasons.
         """
         validation_rfiles = []
+        rf = self.target_export_data.get('envConfig', {}).get(env, {}).get('resourcefiles', {}).keys()    # noqa pylint: disable=C0301
         for resourcefile in resourcefiles.keys():
             obj = copy.copy(resourcefiles[resourcefile])
             obj['importable'], obj['reason'] = self.validate_env_resourcefile_resource(resourcefiles[resourcefile])    # noqa pylint: disable=C0301
-            rf = self.target_export_data.get('envConfig', {}).get(env, {}).get('resourcefiles', {}).keys()    # noqa pylint: disable=C0301
             if resourcefile in rf:
                 obj['imported'] = True
             else:
@@ -147,7 +202,7 @@ class ApigeeValidator():
             return True, []
         return False, errors
 
-    def validate_proxy_bundles(self, export_dir):
+    def validate_proxy_bundles(self, export_dir, api_type):
         """Validates proxy bundles.
 
         Args:
@@ -158,20 +213,17 @@ class ApigeeValidator():
             dict: Validation results for APIs and
                 sharedflows.
         """
-        apis = self.target_export_data.get('orgConfig', {}).get('apis', {}).keys()    # noqa pylint: disable=C0301
-        sharedflows = self.target_export_data.get('orgConfig', {}).get('sharedflows', {}).keys()    # noqa pylint: disable=C0301
-        apis_sf_list = {'apis': apis, 'sharedflows': sharedflows}
-        validation = {'apis': [], 'sharedflows': []}
-        for each_api_type in ['apis', 'sharedflows']:
-            bundle_dir = f"{export_dir}/{each_api_type}"
-            for proxy_bundle in list_dir(bundle_dir):
-                each_validation = self.validate_proxy(bundle_dir, each_api_type, proxy_bundle)    # noqa pylint: disable=C0301
-                api_name = proxy_bundle.split(".zip")[0]
-                if api_name in apis_sf_list[each_api_type]:
-                    each_validation['imported'] = True
-                else:
-                    each_validation['imported'] = False
-                validation[each_api_type].append(each_validation)
+        objects = self.target_export_data.get('orgConfig', {}).get(api_type, {}).keys()    # noqa pylint: disable=C0301
+        validation = {api_type: []}
+        bundle_dir = f"{export_dir}/{api_type}"
+        for proxy_bundle in list_dir(bundle_dir):
+            each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
+            api_name = proxy_bundle.split(".zip")[0]
+            if api_name in objects:
+                each_validation['imported'] = True
+            else:
+                each_validation['imported'] = False
+            validation[api_type].append(each_validation)
         return validation
 
     @retry()
