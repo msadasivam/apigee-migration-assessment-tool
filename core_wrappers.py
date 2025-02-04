@@ -202,7 +202,7 @@ def export_artifacts(cfg, resources_list):
     return export_data
 
 
-def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disable=R0914
+def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disable=R0914,R0912,R0915
     """Validates exported artifacts against the target environment.
 
     Validates the exported Apigee artifacts against the constraints of
@@ -277,20 +277,20 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         report['org_keyvaluemaps'] = apigee_validator.validate_kvms(None, org_keyvaluemaps)  # noqa
     if 'all' in resources_list or 'developers' in resources_list:
         developers = export_data['orgConfig']['developers']
-        report['developers'] = apigee_validator.validate_org_resource('developers', developers)
+        report['developers'] = apigee_validator.validate_org_resource('developers', developers)  # noqa pylint: disable=C0301
     if 'all' in resources_list or 'apiproducts' in resources_list:
-        apiProducts = export_data['orgConfig']['apiProducts']
-        report['apiProducts'] = apigee_validator.validate_org_resource('apiProducts', apiProducts)
+        api_products = export_data['orgConfig']['apiProducts']
+        report['apiProducts'] = apigee_validator.validate_org_resource('apiProducts', api_products)  # noqa pylint: disable=C0301
     if 'all' in resources_list or 'apps' in resources_list:
         apps = export_data['orgConfig']['apps']
-        report['apps'] = apigee_validator.validate_org_resource('apps', apps)
+        report['apps'] = apigee_validator.validate_org_resource('apps', apps)  # noqa pylint: disable=C0301
     if 'all' in resources_list or 'apis' in resources_list:
-        apis_validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')
+        apis_validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(apis_validation)
     if 'all' in resources_list or 'sharedflows' in resources_list:
-        sf_validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')
+        sf_validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(sf_validation)

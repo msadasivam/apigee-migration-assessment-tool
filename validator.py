@@ -98,6 +98,8 @@ class ApigeeValidator():
         else:
             kvms = self.target_export_data.get('orgConfig', {}).get('kvms', {}).keys()    # noqa pylint: disable=C0301
         for each_kvm, obj in keyvaluemaps.items():
+            if 'name' not in obj:
+                obj['name'] = each_kvm
             obj['importable'], obj['reason'] = True, []
             if each_kvm in kvms:
                 obj['imported'] = True
