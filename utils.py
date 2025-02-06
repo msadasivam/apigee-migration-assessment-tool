@@ -774,11 +774,12 @@ def get_all_policies_from_endpoint(endpoint_data, endpoint_type):
             )))
 
     for each_flow in flows:
-        policies.extend(
-            get_all_policies_from_flow(
-                each_flow
+        if isinstance(each_flow, dict):
+            policies.extend(
+                get_all_policies_from_flow(
+                    each_flow
+                )
             )
-        )
     if 'DefaultFaultRule' in endpoint_data[endpoint_type]:
 
         policies.extend(
