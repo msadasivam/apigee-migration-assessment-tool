@@ -241,6 +241,9 @@ def proxy_dependency_map_parallel(arg_tuple):  # noqa pylint: disable=R0914
     except Exception as error:   # noqa pylint: disable=W0718
         logger.error(  # noqa pylint: disable=W1203
             f"Error in proxy dependency map parallel function. ERROR-INFO - {error} {each_dir}")  # noqa pylint: disable=C0301
+        proxy_dependency_map_data[each_dir] = {
+            'is_split': False
+        }
     return proxy_dependency_map_data
 
 
