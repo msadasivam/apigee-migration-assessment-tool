@@ -498,7 +498,7 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
 
     source_apigee_version = cfg.get('inputs', 'SOURCE_APIGEE_VERSION')
 
-    if not os.environ.get("IGNORE_ENV_SHARD")== "true":
+    if not os.environ.get("IGNORE_ENV_SHARD") == "true":
         qualification_report_obj.sharding()
 
     if source_apigee_version == 'OPDK':

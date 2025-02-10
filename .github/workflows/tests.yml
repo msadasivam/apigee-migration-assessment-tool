@@ -170,4 +170,5 @@ jobs:
 
       - name: Run Docker container
         run: |
+          docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:feature"
           docker push "$IMAGE_NAME:feature"
