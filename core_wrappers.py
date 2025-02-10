@@ -191,14 +191,12 @@ def export_artifacts(cfg, resources_list):
         logger.debug(export_data)
         apigee_export.create_export_state(export_dir)
         # apigeeExport.export_api_proxy_bundles(EXPORT_DIR)
-
     proxy_dependency_map = sharding.proxy_dependency_map(cfg, export_data)
-    sharding_output = sharding.sharding_wrapper(
-        proxy_dependency_map, export_data)
-
     export_data['proxy_dependency_map'] = proxy_dependency_map
-    export_data['sharding_output'] = sharding_output
-
+    if not os.environ.get("IGNORE_ENV_SHARD") == "true":
+        sharding_output = sharding.sharding_wrapper(
+            proxy_dependency_map, export_data)
+        export_data['sharding_output'] = sharding_output
     return export_data
 
 
@@ -500,7 +498,8 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
 
     source_apigee_version = cfg.get('inputs', 'SOURCE_APIGEE_VERSION')
 
-    qualification_report_obj.sharding()
+    if not os.environ.get("IGNORE_ENV_SHARD")== "true":
+        qualification_report_obj.sharding()
 
     if source_apigee_version == 'OPDK':
         qualification_report_obj.report_network_topology()
