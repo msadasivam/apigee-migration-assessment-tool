@@ -194,6 +194,11 @@ def proxy_dependency_map_parallel(arg_tuple):  # noqa pylint: disable=R0914
         proxy_dir = arg_tuple[1]
         proxy_dependency_map_data = arg_tuple[2]
         logger.info(f"processing {each_dir}")  # noqa pylint: disable=W1203
+        if not os.path.exists(f"{proxy_dir}/{each_dir}/apiproxy"):
+            proxy_dependency_map_data[each_dir] = {
+                'is_split': False
+            }
+            return proxy_dependency_map_data
         each_proxy_dict = utils.read_proxy_artifacts(
             f"{proxy_dir}/{each_dir}/apiproxy",
             utils.parse_proxy_root_sharding(
