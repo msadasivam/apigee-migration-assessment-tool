@@ -283,12 +283,14 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         apps = export_data['orgConfig']['apps']
         report['apps'] = apigee_validator.validate_org_resource('apps', apps)  # noqa pylint: disable=C0301
     if 'all' in resources_list or 'apis' in resources_list:
-        apis_validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')  # noqa pylint: disable=C0301
+        apis = export_data.get('orgConfig', {}).get('apis', {}).keys()    # noqa pylint: disable=C0301
+        apis_validation = apigee_validator.validate_proxy_bundles(apis, export_dir, 'apis')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(apis_validation)
     if 'all' in resources_list or 'sharedflows' in resources_list:
-        sf_validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')  # noqa pylint: disable=C0301
+        sharedflows = export_data.get('orgConfig', {}).get('sharedflows', {}).keys()    # noqa pylint: disable=C0301
+        sf_validation = apigee_validator.validate_proxy_bundles(sharedflows, export_dir, 'sharedflows')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(sf_validation)
@@ -385,7 +387,7 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                         viols = ""
                         for violation in final_report[key][name][0]['violations']:  # noqa
                             viols += str(count) + ". "
-                            viols += violation['description'] + " "
+                            viols += violation.get('description', '') + " "
                             count = count+1
                         dg.nodes['ORG' + SEPERATOR +
                                 name]['title'] = '<b>Reason</b> : ' + viols   # noqa
