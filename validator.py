@@ -232,6 +232,7 @@ class ApigeeValidator():
             else:
                 each_validation['imported'] = False
             validation[api_type].append(each_validation)
+            each_validation = {}
         return validation
 
     @retry()
