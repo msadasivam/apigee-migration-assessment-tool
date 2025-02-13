@@ -336,8 +336,9 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
                 (api_type, api_name, export_dir).
         """
         revisions = self.list_api_revisions(arg_tuple[0], arg_tuple[1])
-        self.fetch_api_revision(
-            arg_tuple[0], arg_tuple[1], revisions[-1], arg_tuple[2])
+        if len(revisions) > 0:
+            self.fetch_api_revision(
+                arg_tuple[0], arg_tuple[1], revisions[-1], arg_tuple[2])
 
     def create_api(self, api_type, api_name, proxy_bundle_path, action):
         """Creates or validates an API proxy or sharedflow.

@@ -202,7 +202,7 @@ class ApigeeValidator():
             return True, []
         return False, errors
 
-    def validate_proxy_bundles(self, export_dir, api_type):
+    def validate_proxy_bundles(self, export_objects, export_dir, api_type):
         """Validates proxy bundles.
 
         Args:
@@ -216,14 +216,23 @@ class ApigeeValidator():
         objects = self.target_export_data.get('orgConfig', {}).get(api_type, {}).keys()    # noqa pylint: disable=C0301
         validation = {api_type: []}
         bundle_dir = f"{export_dir}/{api_type}"
-        for proxy_bundle in list_dir(bundle_dir):
-            each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
-            api_name = proxy_bundle.split(".zip")[0]
+        export_bundles = list_dir(bundle_dir)
+        for api_name in export_objects:
+            proxy_bundle = f"{api_name}.zip"
+            if proxy_bundle in export_bundles:
+                each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
+            else:
+                each_validation['name'] = api_name
+                each_validation['importable'] = False
+                each_validation['reason'] = [{
+                    'violations': ['Proxy bundle parse issue OR No valid revisions found']    # noqa pylint: disable=C0301
+                    }]
             if api_name in objects:
                 each_validation['imported'] = True
             else:
                 each_validation['imported'] = False
             validation[api_type].append(each_validation)
+            each_validation = {}
         return validation
 
     @retry()

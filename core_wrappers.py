@@ -191,14 +191,12 @@ def export_artifacts(cfg, resources_list):
         logger.debug(export_data)
         apigee_export.create_export_state(export_dir)
         # apigeeExport.export_api_proxy_bundles(EXPORT_DIR)
-
     proxy_dependency_map = sharding.proxy_dependency_map(cfg, export_data)
-    sharding_output = sharding.sharding_wrapper(
-        proxy_dependency_map, export_data)
-
     export_data['proxy_dependency_map'] = proxy_dependency_map
-    export_data['sharding_output'] = sharding_output
-
+    if not os.environ.get("IGNORE_ENV_SHARD") == "true":
+        sharding_output = sharding.sharding_wrapper(
+            proxy_dependency_map, export_data)
+        export_data['sharding_output'] = sharding_output
     return export_data
 
 
@@ -285,12 +283,14 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         apps = export_data['orgConfig']['apps']
         report['apps'] = apigee_validator.validate_org_resource('apps', apps)  # noqa pylint: disable=C0301
     if 'all' in resources_list or 'apis' in resources_list:
-        apis_validation = apigee_validator.validate_proxy_bundles(export_dir, 'apis')  # noqa pylint: disable=C0301
+        apis = export_data.get('orgConfig', {}).get('apis', {}).keys()    # noqa pylint: disable=C0301
+        apis_validation = apigee_validator.validate_proxy_bundles(apis, export_dir, 'apis')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(apis_validation)
     if 'all' in resources_list or 'sharedflows' in resources_list:
-        sf_validation = apigee_validator.validate_proxy_bundles(export_dir, 'sharedflows')  # noqa pylint: disable=C0301
+        sharedflows = export_data.get('orgConfig', {}).get('sharedflows', {}).keys()    # noqa pylint: disable=C0301
+        sf_validation = apigee_validator.validate_proxy_bundles(sharedflows, export_dir, 'sharedflows')  # noqa pylint: disable=C0301
         # Todo  # pylint: disable=W0511
         # validate proxy unifier output bundles
         report.update(sf_validation)
@@ -387,7 +387,7 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                         viols = ""
                         for violation in final_report[key][name][0]['violations']:  # noqa
                             viols += str(count) + ". "
-                            viols += violation['description'] + " "
+                            viols += violation.get('description', '') + " "
                             count = count+1
                         dg.nodes['ORG' + SEPERATOR +
                                 name]['title'] = '<b>Reason</b> : ' + viols   # noqa
@@ -500,7 +500,8 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
 
     source_apigee_version = cfg.get('inputs', 'SOURCE_APIGEE_VERSION')
 
-    qualification_report_obj.sharding()
+    if not os.environ.get("IGNORE_ENV_SHARD") == "true":
+        qualification_report_obj.sharding()
 
     if source_apigee_version == 'OPDK':
         qualification_report_obj.report_network_topology()

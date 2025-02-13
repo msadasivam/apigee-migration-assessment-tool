@@ -312,8 +312,9 @@ class ApigeeClassic():
                 (api_type, api_name, export_dir).
         """
         revisions = self.list_api_revisions(arg_tuple[0], arg_tuple[1])
-        self.fetch_api_revision(
-            arg_tuple[0], arg_tuple[1], revisions[-1], arg_tuple[2])
+        if len(revisions) > 0:
+            self.fetch_api_revision(
+                arg_tuple[0], arg_tuple[1], revisions[-1], arg_tuple[2])
 
     def view_pod_component_details(self, pod):
         """Retrieves the details of components within a specific pod.
