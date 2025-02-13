@@ -175,6 +175,8 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
         Returns:
             dict: A dictionary containing the object details.
         """
+        if len(org_object_name) == 0:
+            return {'name': 'EMPTY_OBJECT_NAME'}
         if org_object == "resourcefiles":
             return {}
         org_object_name = urlencode(org_object_name)
@@ -204,6 +206,8 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
         Returns:
             dict: The environment object details.
         """
+        if len(env_object_name) == 0:
+            return {'name': 'EMPTY_OBJECT_NAME'}
         if env_object == 'resourcefiles':
             url = f"{self.baseurl}/organizations/{self.project_id}/environments/{env}/{env_object}/{env_object_name['type']}/{env_object_name['name']}"   # noqa pylint: disable=C0301
             env_object = self.client.get(url)
