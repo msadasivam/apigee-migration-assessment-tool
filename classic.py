@@ -146,6 +146,8 @@ class ApigeeClassic():
         Returns:
             dict: A dictionary containing the object details.
         """
+        if len(org_object_name) == 0:
+            return {'name': 'EMPTY_OBJECT_NAME'}
         if org_object == "resourcefiles":
             resource_type = org_object_name["type"]
             name = org_object_name["name"]
@@ -185,6 +187,8 @@ class ApigeeClassic():
         Returns:
             dict: A dictionary containing the object details.
         """
+        if len(env_object_name) == 0:
+            return {'name': 'EMPTY_OBJECT_NAME'}
         if env_object == "resourcefiles":
             resource_type = env_object_name["type"]
             name = env_object_name["name"]
