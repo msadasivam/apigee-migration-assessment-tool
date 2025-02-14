@@ -138,7 +138,7 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     missing_permissions = xorhybrid.validate_permissions()
     if len(missing_permissions) > 0:
         logger.error(    # pylint: disable=W1203
-            f"Missing required IAM permission. ERROR-INFO - {'\n'.join(missing_permissions)}")  # noqa pylint: disable=C0301,W1203
+            f"Missing required IAM permission. ERROR-INFO - {missing_permissions}")  # noqa pylint: disable=C0301,W1203
         logger.info("Ensure user/service account has roles/apigee.readOnlyAdmin role and apigee.proxies.create permission")  # noqa pylint: disable=C0301,W1203
         return False
     org_obj = xorhybrid.get_org()

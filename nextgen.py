@@ -21,8 +21,8 @@ It offers methods for creating and validating API proxies and sharedflows.
 """
 
 from requests.utils import quote as urlencode  # pylint: disable=E0401
-from google.cloud import resourcemanager_v3
-from google.oauth2.credentials import Credentials
+from google.cloud import resourcemanager_v3  # pylint: disable=E0401
+from google.oauth2.credentials import Credentials  # pylint: disable=E0401
 from utils import parse_json
 from rest import RestClient
 
