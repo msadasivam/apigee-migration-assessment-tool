@@ -21,8 +21,10 @@ It offers methods for creating and validating API proxies and sharedflows.
 """
 
 from requests.utils import quote as urlencode  # pylint: disable=E0401
+from google.cloud import resourcemanager_v3  # pylint: disable=E0401
+from google.oauth2.credentials import Credentials  # pylint: disable=E0401
+from utils import parse_json
 from rest import RestClient
-
 
 class ApigeeNewGen():   # noqa pylint: disable=R0902
     """A client for interacting with Apigee X or hybrid.
@@ -61,6 +63,24 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
         self.env_objects = ['keyvaluemaps', 'targetservers', 'flowhooks',
                             'keystores', 'caches']
         self.client = RestClient('oauth', token)
+
+    def validate_permissions(self):
+        """Validate if the user has right permissions.
+
+        Returns:
+            array: A array of missing permissions.
+        """
+        permissions_list = parse_json('permissions.json')
+        credentials = Credentials(self.token)
+        projects_client = resourcemanager_v3.ProjectsClient(credentials=credentials)  # noqa pylint: disable=C0301
+        project_id = f"projects/{self.project_id}"
+        owned_permissions = projects_client.test_iam_permissions(
+                            resource=project_id,
+                            permissions=permissions_list,
+                            ).permissions
+        absent_permissions = [item for item in permissions_list
+                              if item not in owned_permissions]
+        return absent_permissions
 
     def get_org(self):
         """Retrieves details of the Apigee organization.
