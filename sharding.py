@@ -54,8 +54,9 @@ def qualification_report_info(each_proxy_dict):
 
         # JSONPath Enabled
         if list(value.keys())[0] == 'ExtractVariables':
-            report['JsonPathEnabled'][policy] = len(
-                value['ExtractVariables'].get('JSONPayload', {}).get('Variable', {}))  # noqa pylint: disable=C0301
+            jp_count = len(value['ExtractVariables'].get('JSONPayload', {}).get('Variable', {}))  # noqa pylint: disable=C0301
+            if jp_count > 0:
+                report['JsonPathEnabled'][policy] = jp_count
 
         # Quota Policy Anti Pattern
         if list(value.keys())[0] == 'Quota':
