@@ -40,7 +40,7 @@ class ApigeeValidator():
     rules and compatibility checks.
     """
 
-    def __init__(self, project_id, token, env_type, target_export_data):
+    def __init__(self, baseurl, project_id, token, env_type, target_export_data):    # noqa pylint: disable=R0913,W0012,R0917
         """Initializes ApigeeValidator.
 
         Args:
@@ -50,7 +50,7 @@ class ApigeeValidator():
                 ('hybrid' or 'x').
         """
         self.project_id = project_id
-        self.xorhybrid = ApigeeNewGen(project_id, token, env_type)
+        self.xorhybrid = ApigeeNewGen(baseurl, project_id, token, env_type)
         self.target_export_data = target_export_data
 
     def validate_org_resource(self, resource_type, resources):
