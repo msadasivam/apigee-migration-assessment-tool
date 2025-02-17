@@ -123,6 +123,7 @@ You can run this tool locally or using Docker.
     | `input`  | `SOURCE_AUTH_TYPE`    | Apigee OPDK/Edge auth type , `basic` OR `oauth`|
     | `input`  | `SOURCE_UI_URL`    | Apigee OPDK/Edge UI URL, use default|
     | `input`  | `SOURCE_APIGEE_VERSION`     | APIGEE Flavor `OPDK` OR `SAAS` OR `X` OR `HYBRID`|
+    | `input`  | `TARGET_URL`    | Apigee X/Hybrid Management URL. Global or DRZ URL is supported |
     | `input`  | `GCP_PROJECT_ID`    | GCP Project ID running Apigee X/Hybrd. Trial orgs are supported|
     | `input`  | `API_URL`    | Apigee API url, use default |
     | `input`  | `GCP_ENV_TYPE`     | Apigee X/Hybrid desired environment type |

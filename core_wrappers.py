@@ -87,7 +87,7 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
         "inputs": [
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
             "SOURCE_UI_URL", "SOURCE_APIGEE_VERSION",
-            "GCP_PROJECT_ID", "GCP_ENV_TYPE",
+            "TARGET_URL", "GCP_PROJECT_ID", "GCP_ENV_TYPE",
             "API_URL", "TARGET_DIR", "SSL_VERIFICATION"],
         "export": ["EXPORT_DIR", "EXPORT_FILE"],
         "topology": [
@@ -129,12 +129,14 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
         return False
 
     # check for target org
+    target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_token = get_access_token()
     gcp_env_type = cfg.get('inputs', 'GCP_ENV_TYPE',
                            fallback=DEFAULT_GCP_ENV_TYPE)
 
-    xorhybrid = ApigeeNewGen(gcp_project_id, gcp_token, gcp_env_type)
+    xorhybrid = ApigeeNewGen(target_url, gcp_project_id,
+                             gcp_token, gcp_env_type)
     missing_permissions = xorhybrid.validate_permissions()
     if len(missing_permissions) > 0:
         logger.error(    # pylint: disable=W1203
@@ -234,12 +236,13 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     sf_export_dir = f"{target_export_dir}/sharedflows"
     create_dir(api_export_dir)
     create_dir(sf_export_dir)
+    target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_env_type = cfg.get('inputs', 'GCP_ENV_TYPE',
                            fallback=DEFAULT_GCP_ENV_TYPE)
     gcp_token = get_access_token()
     apigee_export = ApigeeExporter(
-        'https://apigee.googleapis.com/v1',
+        target_url,
         gcp_project_id,
         gcp_token,
         'oauth',
@@ -259,7 +262,7 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
         target_export_data['export'] = True
         write_json(target_export_data_file, target_export_data)
-    apigee_validator = ApigeeValidator(gcp_project_id, gcp_token, gcp_env_type, target_export_data)  # noqa pylint: disable=C0301
+    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
         logger.info(f'Environment -- {env}')  # pylint: disable=W1203

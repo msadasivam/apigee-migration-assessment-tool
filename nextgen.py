@@ -32,7 +32,7 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
     Provides methods to interact with Apigee X or hybrid environments,
     including creating and validating API proxies and shared flows.
     """
-    def __init__(self, project_id, token, env_type):
+    def __init__(self, baseurl, project_id, token, env_type):
         """Initializes the ApigeeNewGen client.
 
         Args:
@@ -41,7 +41,7 @@ class ApigeeNewGen():   # noqa pylint: disable=R0902
             env_type (str): The environment type ('hybrid' or 'x').
                             Defaults to 'ENVIRONMENT_TYPE_UNSPECIFIED'.
         """
-        self.baseurl = 'https://apigee.googleapis.com/v1'
+        self.baseurl = baseurl
         self.project_id = project_id
         self.token = token
         self.env_type = env_type or 'ENVIRONMENT_TYPE_UNSPECIFIED'
