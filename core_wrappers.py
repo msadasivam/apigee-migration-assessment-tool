@@ -54,7 +54,7 @@ from qualification_report import QualificationReport
 from topology import ApigeeTopology
 from utils import (
     create_dir, get_source_auth_token,
-    get_access_token)
+    get_access_token, write_json, parse_json)
 import sharding
 from base_logger import logger
 
@@ -229,6 +229,7 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     target_dir = cfg.get('inputs', 'TARGET_DIR')
     export_dir = f"{target_dir}/{cfg.get('export', 'EXPORT_DIR')}"
     target_export_dir = f"{target_dir}/target"
+    target_export_data_file = f"{target_export_dir}/export_data.json"
     api_export_dir = f"{target_export_dir}/apis"
     sf_export_dir = f"{target_export_dir}/sharedflows"
     create_dir(api_export_dir)
@@ -253,8 +254,11 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         target_resource_list = target_resources
     else:
         target_resource_list = [ r for r in resources_list if r in target_resources]  # noqa pylint: disable=C0301
-
-    target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
+    target_export_data = parse_json(target_export_data_file)
+    if not target_export_data.get('export', False):
+        target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
+        target_export_data['export'] = True
+        write_json(target_export_data_file, target_export_data)
     apigee_validator = ApigeeValidator(gcp_project_id, gcp_token, gcp_env_type, target_export_data)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
