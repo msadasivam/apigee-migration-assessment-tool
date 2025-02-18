@@ -998,10 +998,15 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                     validation_report_sheet.write(row, col, values['importable'], self.danger_format)   # noqa pylint: disable=C0301
                     col += 1
                     reason_str = {}
-
-                    for reason in values['reason']:
-                        if reason.get('violations'):
-                            reason_str['violations'] = reason['violations']
+                    violations = values.get('reason', [{'violations': []}])
+                    if len(violations[0].get('violations', [])) == 0:
+                        error_code = values.get('error', {}).get('code', 0)
+                        message = values.get('error', {}).get('message', '')
+                        reason_str = {'violations': [
+                            {'description': f"code: {error_code}. error_message: {message}"} # noqa
+                        ]}
+                    else:
+                        reason_str = violations[0].get('violations', [])
 
                     validation_report_sheet.write(row, col, json.dumps(reason_str, indent=2))   # noqa pylint: disable=C0301
                 col += 1
