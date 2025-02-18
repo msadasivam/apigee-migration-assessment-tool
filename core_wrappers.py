@@ -343,9 +343,17 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
         final_report[res] = {}
         for i in val:
             if i.get('importable', False):
-                final_report[res][i['name']] = i['importable']
+                final_report[res][i['name']] = i.get('importable', False)
             else:
-                final_report[res][i['name']] = i['reason']
+                violations = i.get('reason', [{'violations': []}])
+                if len(violations[0].get('violations', [])) == 0:
+                    error_code = i.get('error', {}).get('code', 0)
+                    message = i.get('error', {}).get('message', '')
+                    final_report[res][i['name']] = [{'violations': [
+                        {'description': f"code: {error_code}. error_message: {message}"} # noqa
+                    ]}]
+                else:
+                    final_report[res][i['name']] = violations   # noqa
 
     # Org level resources
     org_url = source_ui_url + source_url
@@ -398,7 +406,8 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                         dg.nodes['ORG' + SEPERATOR + name]['color'] = 'red'
                         count = 1
                         viols = ""
-                        for violation in final_report[key][name][0]['violations']:  # noqa
+                        each_resource = final_report.get(key, {}).get(name, [{'violations': []}])   # noqa pylint: disable=C0301
+                        for violation in each_resource[0].get('violations', []):  # noqa
                             viols += str(count) + ". "
                             viols += violation.get('description', '') + " "
                             count = count+1
