@@ -1,7 +1,7 @@
 {
     "headers": ["Organization", "Companies"],
     "info_block": {
-        "text": "<b>[Feature Parity] Companies\n\nApigee X does not support Companies feature. This lists all Companies.\n\n<iu>Long Term Plan:\nAlternate Solution: AppGroups is currently scheduled to be in Preview in May 2023. ",
+        "text": "<b>[Feature Parity] Companies\n\nApigee X does not support Companies feature. This lists all Companies.\n\n<iu>Long Term Plan:\nAlternate Solution: AppGroups: https://cloud.google.com/apigee/docs/api-platform/publish/organizing-client-app-ownership#what-are-appgroups. ",
         "text_line_no_for_col_count": 5,
         "col_merge": 3,
         "start_row": 2,
