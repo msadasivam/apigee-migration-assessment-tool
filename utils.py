@@ -161,7 +161,8 @@ def list_dir(dir_name, isok=False):
             logger.info(f"Ignoring : Directory \"{dir_name}\" not found")  # noqa pylint: disable=W1203
             return []
         logger.error(f"Directory \"{dir_name}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
-        sys.exit(1)
+        # fix abrupt exit
+        # sys.exit(1)
 
 
 def delete_folder(src):
