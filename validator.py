@@ -40,7 +40,7 @@ class ApigeeValidator():
     rules and compatibility checks.
     """
 
-    def __init__(self, baseurl, project_id, token, env_type, target_export_data):    # noqa pylint: disable=R0913,W0012,R0917
+    def __init__(self, baseurl, project_id, token, env_type, target_export_data, target_compare):    # noqa pylint: disable=R0913,W0012,R0917
         """Initializes ApigeeValidator.
 
         Args:
@@ -52,6 +52,7 @@ class ApigeeValidator():
         self.project_id = project_id
         self.xorhybrid = ApigeeNewGen(baseurl, project_id, token, env_type)
         self.target_export_data = target_export_data
+        self.target_compare = target_compare
 
     def validate_org_resource(self, resource_type, resources):
         """Validates environment keyvaluemaps.
@@ -72,10 +73,13 @@ class ApigeeValidator():
             if resource_type == 'developers':
                 obj['name'] = each_obj
             obj['importable'], obj['reason'] = True, []
-            if each_obj in target_resources:
-                obj['imported'] = True
+            if not self.target_compare:
+                obj['imported'] = 'UNKNOWN'
             else:
-                obj['imported'] = False
+                if each_obj in target_resources:
+                    obj['imported'] = True
+                else:
+                    obj['imported'] = False
             validation_resources.append(obj)
         return validation_resources
 
@@ -101,10 +105,13 @@ class ApigeeValidator():
             if 'name' not in obj:
                 obj['name'] = each_kvm
             obj['importable'], obj['reason'] = True, []
-            if each_kvm in kvms:
-                obj['imported'] = True
+            if not self.target_compare:
+                obj['imported'] = 'UNKNOWN'
             else:
-                obj['imported'] = False
+                if each_kvm in kvms:
+                    obj['imported'] = True
+                else:
+                    obj['imported'] = False
             validation_kvms.append(obj)
         return validation_kvms
 
@@ -125,10 +132,13 @@ class ApigeeValidator():
         for _, target_server_data in target_servers.items():
             obj = copy.copy(target_server_data)
             obj['importable'], obj['reason'] = self.validate_env_targetserver_resource(target_server_data)   # noqa pylint: disable=C0301
-            if target_server_data['name'] in ts:
-                obj['imported'] = True
+            if not self.target_compare:
+                obj['imported'] = 'UNKNOWN'
             else:
-                obj['imported'] = False
+                if target_server_data['name'] in ts:
+                    obj['imported'] = True
+                else:
+                    obj['imported'] = False
             validation_targetservers.append(obj)
         return validation_targetservers
 
@@ -173,10 +183,13 @@ class ApigeeValidator():
         for resourcefile in resourcefiles.keys():
             obj = copy.copy(resourcefiles[resourcefile])
             obj['importable'], obj['reason'] = self.validate_env_resourcefile_resource(resourcefiles[resourcefile])    # noqa pylint: disable=C0301
-            if resourcefile in rf:
-                obj['imported'] = True
+            if not self.target_compare:
+                obj['imported'] = 'UNKNOWN'
             else:
-                obj['imported'] = False
+                if resourcefile in rf:
+                    obj['imported'] = True
+                else:
+                    obj['imported'] = False
             validation_rfiles.append(obj)
         return validation_rfiles
 
@@ -227,10 +240,13 @@ class ApigeeValidator():
                 each_validation['reason'] = [{
                     'violations': ['Proxy bundle parse issue OR No valid revisions found']    # noqa pylint: disable=C0301
                     }]
-            if api_name in objects:
-                each_validation['imported'] = True
+            if not self.target_compare:
+                each_validation['imported'] = 'UNKNOWN'
             else:
-                each_validation['imported'] = False
+                if api_name in objects:
+                    each_validation['imported'] = True
+                else:
+                    each_validation['imported'] = False
             validation[api_type].append(each_validation)
             each_validation = {}
         return validation
@@ -281,10 +297,13 @@ class ApigeeValidator():
             obj['name'] = flowhook
             obj['importable'], obj['reason'] = self.validate_env_flowhooks_resource(env, flowhooks[flowhook])   # noqa pylint: disable=C0301
             fh = self.target_export_data.get('envConfig', {}).get(env, {}).get('flowhooks', {}).keys()    # noqa pylint: disable=C0301
-            if flowhook in fh:
-                obj['imported'] = True
+            if not self.target_compare:
+                obj['imported'] = 'UNKNOWN'
             else:
-                obj['imported'] = False
+                if flowhook in fh:
+                    obj['imported'] = True
+                else:
+                    obj['imported'] = False
             validation_flowhooks.append(obj)
         return validation_flowhooks
 

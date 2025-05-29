@@ -95,6 +95,7 @@ The tool requires specific permissions to access and analyze your Apigee environ
     | `input` | `TARGET_URL`            | Management URL of your target Apigee X/Hybrid environment (Global or DRZ URL).|
     | `input` | `GCP_PROJECT_ID`        | GCP Project ID where your target Apigee X/Hybrid instance is running.       |
     | `input` | `TARGET_DIR`            | Name of the directory where exported Apigee objects and reports will be saved (e.g., `output`). |
+    | `input` | `TARGET_COMPARE`        | Set to `true` to export apigee objects from target environment and compare with source. Set to `false` to avoid export and compare. |
     | `input` | `SSL_VERIFICATION`      | Set to `false` to ignore SSL certificate verification, or `true` to enforce it. |
 
 2.  **Authentication Tokens:**
