@@ -60,7 +60,7 @@ from base_logger import logger
 
 
 SEPERATOR = ' | '
-DEFAULT_GCP_ENV_TYPE = 'BASE'
+DEFAULT_GCP_ENV_TYPE = 'ENVIRONMENT_TYPE_UNSPECIFIED'
 
 
 def pre_validation_checks(cfg):  # pylint: disable=R0914
@@ -127,8 +127,7 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_token = get_access_token()
-    gcp_env_type = cfg.get('inputs', 'GCP_ENV_TYPE',
-                           fallback=DEFAULT_GCP_ENV_TYPE)
+    gcp_env_type = DEFAULT_GCP_ENV_TYPE
 
     xorhybrid = ApigeeNewGen(target_url, gcp_project_id,
                              gcp_token, gcp_env_type)
@@ -234,8 +233,7 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     create_dir(sf_export_dir)
     target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
-    gcp_env_type = cfg.get('inputs', 'GCP_ENV_TYPE',
-                           fallback=DEFAULT_GCP_ENV_TYPE)
+    gcp_env_type = DEFAULT_GCP_ENV_TYPE
     gcp_token = get_access_token()
     apigee_export = ApigeeExporter(
         target_url,
