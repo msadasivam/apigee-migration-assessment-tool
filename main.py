@@ -97,8 +97,8 @@ def main():
 
     topology_mapping = {}
     target_dir = cfg.get('inputs', 'TARGET_DIR')
-    export_dir = cfg.get('export', 'EXPORT_DIR')
-    export_file = cfg.get('export', 'EXPORT_FILE')
+    export_dir = backend_cfg.get('export', 'EXPORT_DIR')
+    export_file = backend_cfg.get('export', 'EXPORT_FILE')
     export_data_file = f"{target_dir}/{export_dir}/{export_file}"
     export_data = parse_json(export_data_file)
 

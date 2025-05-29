@@ -98,11 +98,9 @@ def unzip_all_bundles(input_cfg):
         (configparser.ConfigParser): \
         The input configuration.
     """
-
-    export_dir_name = input_cfg.get('export', 'EXPORT_DIR')
-    target_dir = input_cfg.get('inputs', 'TARGET_DIR')
-
     backend_cfg = utils.parse_config('backend.properties')
+    export_dir_name = backend_cfg.get('export', 'EXPORT_DIR')
+    target_dir = input_cfg.get('inputs', 'TARGET_DIR')
     source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')  # noqa pylint: disable=C0301
 
     extension = ".zip"
@@ -152,10 +150,9 @@ def proxy_dependency_map(cfg, export_data):  # noqa pylint: disable=R0914
     unzip_all_bundles(cfg)
 
     input_cfg = utils.parse_config('input.properties')
-    export_dir_name = input_cfg.get('export', 'EXPORT_DIR')
-    target_dir = input_cfg.get('inputs', 'TARGET_DIR')
-
     backend_cfg = utils.parse_config('backend.properties')
+    export_dir_name = backend_cfg.get('export', 'EXPORT_DIR')
+    target_dir = input_cfg.get('inputs', 'TARGET_DIR')
     source_unzipped_apis = backend_cfg.get('unifier', 'source_unzipped_apis')  # noqa pylint: disable=C0301
 
     current_dir = os.getcwd()
@@ -213,7 +210,7 @@ def proxy_dependency_map_parallel(arg_tuple):  # noqa pylint: disable=R0914
         cfg = utils.parse_config('backend.properties')
         proxy_endpoint_cnt = utils.get_proxy_endpoint_count(cfg)
         input_cfg = utils.parse_config('input.properties')
-        export_dir_name = input_cfg.get('export', 'EXPORT_DIR')
+        export_dir_name = cfg.get('export', 'EXPORT_DIR')
         target_dir = input_cfg.get('inputs', 'TARGET_DIR')
         unifier_output_dir = cfg.get('unifier', 'unifier_output_dir')
 

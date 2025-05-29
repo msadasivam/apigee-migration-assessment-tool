@@ -54,7 +54,7 @@ from qualification_report import QualificationReport
 from topology import ApigeeTopology
 from utils import (
     create_dir, get_source_auth_token,
-    get_access_token, write_json, parse_json)
+    get_access_token, write_json, parse_json, parse_config)
 import sharding
 from base_logger import logger
 
@@ -88,7 +88,6 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
             "SOURCE_APIGEE_VERSION", "TARGET_URL", "GCP_PROJECT_ID",
             "GCP_ENV_TYPE", "TARGET_DIR", "SSL_VERIFICATION"],
-        "export": ["EXPORT_DIR", "EXPORT_FILE"],
         "topology": [
             "TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
         "validate": ["CSV_REPORT"]
@@ -168,6 +167,7 @@ def export_artifacts(cfg, resources_list):
         dict: A dictionary containing the exported artifact data.
     """
     logger.info('------------------- EXPORT -----------------------')
+    backend_cfg = parse_config('backend.properties')
     source_url = cfg.get('inputs', 'SOURCE_URL')
     source_org = cfg.get('inputs', 'SOURCE_ORG')
     source_auth_token = get_source_auth_token()
@@ -177,7 +177,7 @@ def export_artifacts(cfg, resources_list):
         ssl_verification = cfg.getboolean('inputs', 'SSL_VERIFICATION')
     except ValueError:
         ssl_verification = True
-    export_dir = f"{target_dir}/{cfg.get('export', 'EXPORT_DIR')}"
+    export_dir = f"{target_dir}/{backend_cfg.get('export', 'EXPORT_DIR')}"
     api_export_dir = f"{export_dir}/apis"
     sf_export_dir = f"{export_dir}/sharedflows"
     create_dir(api_export_dir)
@@ -197,7 +197,6 @@ def export_artifacts(cfg, resources_list):
         export_data = apigee_export.get_export_data(resources_list, export_dir)
         logger.debug(export_data)
         apigee_export.create_export_state(export_dir)
-        # apigeeExport.export_api_proxy_bundles(EXPORT_DIR)
     proxy_dependency_map = sharding.proxy_dependency_map(cfg, export_data)
     export_data['proxy_dependency_map'] = proxy_dependency_map
     if not os.environ.get("IGNORE_ENV_SHARD") == "true":
@@ -226,9 +225,10 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         dict: A dictionary containing the validation report.
     """
     logger.info('------------------- VALIDATE -----------------------')
+    backend_cfg = parse_config('backend.properties')
     report = {}
     target_dir = cfg.get('inputs', 'TARGET_DIR')
-    export_dir = f"{target_dir}/{cfg.get('export', 'EXPORT_DIR')}"
+    export_dir = f"{target_dir}/{backend_cfg.get('export', 'EXPORT_DIR')}"
     target_export_dir = f"{target_dir}/target"
     target_export_data_file = f"{target_export_dir}/export_data.json"
     api_export_dir = f"{target_export_dir}/apis"
