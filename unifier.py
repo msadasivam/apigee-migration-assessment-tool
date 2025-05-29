@@ -49,9 +49,9 @@ def proxy_unifier(proxy_dir_name):  # noqa pylint: disable=R0914
         inputs_cfg = utils.parse_config('input.properties')
 
         cfg = utils.parse_config('backend.properties')
-        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"  # noqa pylint: disable=C0301
-        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"  # noqa pylint: disable=C0301
-        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{inputs_cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"  # noqa pylint: disable=C0301
+        proxy_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}{cfg['unifier']['source_unzipped_apis']}"  # noqa pylint: disable=C0301
+        proxy_dest_dir = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_output_dir']}"  # noqa pylint: disable=C0301
+        proxy_bundle_directory = f"./{inputs_cfg.get('inputs', 'TARGET_DIR')}/{cfg.get('export','EXPORT_DIR')}/{cfg['unifier']['unifier_zipped_bundles']}"  # noqa pylint: disable=C0301
 
         export_debug_file = cfg.getboolean('unifier', 'debug')
 
