@@ -405,7 +405,10 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                         each_resource = final_report.get(key, {}).get(name, [{'violations': []}])   # noqa pylint: disable=C0301
                         for violation in each_resource[0].get('violations', []):  # noqa
                             viols += str(count) + ". "
-                            viols += violation.get('description', '') + " "
+                            if isinstance(violation, dict):
+                                viols += violation.get('description', '') + " "
+                            else:
+                                viols += str(violation) + " "
                             count = count+1
                         dg.nodes['ORG' + SEPERATOR +
                                 name]['title'] = '<b>Reason</b> : ' + viols   # noqa
