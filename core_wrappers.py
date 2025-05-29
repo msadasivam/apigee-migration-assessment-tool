@@ -88,7 +88,6 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
             "SOURCE_APIGEE_VERSION", "TARGET_URL", "GCP_PROJECT_ID",
             "GCP_ENV_TYPE", "TARGET_DIR", "SSL_VERIFICATION"],
-        "validate": ["CSV_REPORT"]
     }
     missing_keys = []
 
@@ -326,6 +325,7 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
         None
     """
     logger.info('------------------- VISUALIZE -----------------------')
+    backend_cfg = parse_config('backend.properties')
     source_url = cfg.get('inputs', 'SOURCE_ORG')
     source_ui_url = 'https://console.cloud.google.com'
     api_url = 'https://apigee.googleapis.com/v1'
@@ -473,7 +473,7 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                   width=1000, height=800)
     net.from_nx(dg)
     target_dir = cfg.get('inputs', 'TARGET_DIR')
-    visualization_graph_file = cfg.get(
+    visualization_graph_file = backend_cfg.get(
         'visualize', 'VISUALIZATION_GRAPH_FILE', fallback='visualization.html')
     net.show(f'{target_dir}/{visualization_graph_file}')
 
@@ -504,7 +504,7 @@ def qualification_report(cfg, backend_cfg, export_data, topology_mapping):
 
     target_dir = cfg.get('inputs', 'TARGET_DIR')
     org_name = cfg.get('inputs', 'SOURCE_ORG')
-    qualification_report_name = cfg.get(
+    qualification_report_name = backend_cfg.get(
         'report', 'QUALIFICATION_REPORT', fallback='qualification_report.xlsx')
 
     qualification_report_obj = QualificationReport(
