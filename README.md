@@ -94,7 +94,6 @@ The tool requires specific permissions to access and analyze your Apigee environ
     | `input` | `SOURCE_APIGEE_VERSION` | Flavor of your source Apigee: `OPDK`, `SAAS`, `X`, or `HYBRID`.             |
     | `input` | `TARGET_URL`            | Management URL of your target Apigee X/Hybrid environment (Global or DRZ URL).|
     | `input` | `GCP_PROJECT_ID`        | GCP Project ID where your target Apigee X/Hybrid instance is running.       |
-    | `input` | `GCP_ENV_TYPE`          | Desired environment type for Apigee X/Hybrid (e.g., `BASE`, `INTERMEDIATE`, `COMPREHENSIVE`). |
     | `input` | `TARGET_DIR`            | Name of the directory where exported Apigee objects and reports will be saved (e.g., `output`). |
     | `input` | `SSL_VERIFICATION`      | Set to `false` to ignore SSL certificate verification, or `true` to enforce it. |
 
