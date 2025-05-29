@@ -86,9 +86,8 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     required_keys = {
         "inputs": [
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
-            "SOURCE_UI_URL", "SOURCE_APIGEE_VERSION",
-            "TARGET_URL", "GCP_PROJECT_ID", "GCP_ENV_TYPE",
-            "API_URL", "TARGET_DIR", "SSL_VERIFICATION"],
+            "SOURCE_APIGEE_VERSION","TARGET_URL", "GCP_PROJECT_ID",
+            "GCP_ENV_TYPE", "TARGET_DIR", "SSL_VERIFICATION"],
         "export": ["EXPORT_DIR", "EXPORT_FILE"],
         "topology": [
             "TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
@@ -330,9 +329,8 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
     """
     logger.info('------------------- VISUALIZE -----------------------')
     source_url = cfg.get('inputs', 'SOURCE_ORG')
-    source_ui_url = cfg.get('inputs', 'SOURCE_UI_URL')
-    api_url = cfg.get('inputs', 'API_URL')
-    # API_URL = "https://apidocs.apigee.com/docs"
+    source_ui_url = 'https://console.cloud.google.com'
+    api_url = 'https://apigee.googleapis.com/v1'
     exportorg = export_data['orgConfig']
     exportenv = export_data['envConfig']
     dg = nx.DiGraph()

@@ -50,8 +50,6 @@ def main():
     between steps to avoid redundant operations.
     """
     # Parse Input
-    cfg = parse_config('input.properties')
-    backend_cfg = parse_config('backend.properties')
     parser = argparse.ArgumentParser(
         description='details',
         usage='use "%(prog)s --help" for more information',
@@ -91,6 +89,8 @@ def main():
     resources_list = args.resources.split(',') if args.resources else []
 
     # Pre validation checks
+    cfg = parse_config('input.properties')
+    backend_cfg = parse_config('backend.properties')
     if not pre_validation_checks(cfg):
         logger.error("Pre validation checks failed. Please, check...")
         return
