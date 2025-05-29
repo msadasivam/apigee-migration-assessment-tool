@@ -26,7 +26,7 @@ from diagrams import Diagram, Cluster  # noqa pylint: disable=E0401
 from diagrams.generic.blank import Blank  # noqa pylint: disable=E0401
 from classic import ApigeeClassic
 from topology_mapping.pod import pod_mapping
-from utils import write_json
+from utils import write_json, parse_config
 from base_logger import logger
 
 
@@ -52,9 +52,9 @@ class ApigeeTopology():
         self.token = token
         self.auth_type = auth_type
         self.cfg = cfg
-
+        self.backend_cfg = parse_config('backend.properties')
         target_dir = self.cfg.get('inputs', 'TARGET_DIR')
-        topology_dir = self.cfg.get('topology', 'TOPOLOGY_DIR')
+        topology_dir = self.backend_cfg.get('topology', 'TOPOLOGY_DIR')
 
         self.topology_dir_path = f"{target_dir}/{topology_dir}"
 
@@ -98,7 +98,7 @@ class ApigeeTopology():
 
             pod_component_result[f'{pod_name}'] = component_type_resp
 
-        nw_toplogy_mapping = self.cfg.get('topology', 'NW_TOPOLOGY_MAPPING')  # noqa
+        nw_toplogy_mapping = self.backend_cfg.get('topology', 'NW_TOPOLOGY_MAPPING')  # noqa
         write_json(
             f"{self.topology_dir_path}/{nw_toplogy_mapping}", pod_component_result)  # noqa
 
@@ -132,7 +132,7 @@ class ApigeeTopology():
                 data_center[component_instance['region']][component_instance['pod']].append(  # noqa pylint: disable=C0301
                     component_instance)
 
-        datacenter_mapping = self.cfg.get('topology', 'DATA_CENTER_MAPPING')  # noqa
+        datacenter_mapping = self.backend_cfg.get('topology', 'DATA_CENTER_MAPPING')  # noqa
         write_json(
             f'{self.topology_dir_path}/{datacenter_mapping}', data_center)  # noqa
 

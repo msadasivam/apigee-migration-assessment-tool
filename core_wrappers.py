@@ -88,8 +88,6 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
             "SOURCE_APIGEE_VERSION", "TARGET_URL", "GCP_PROJECT_ID",
             "GCP_ENV_TYPE", "TARGET_DIR", "SSL_VERIFICATION"],
-        "topology": [
-            "TOPOLOGY_DIR", "NW_TOPOLOGY_MAPPING", "DATA_CENTER_MAPPING"],
         "validate": ["CSV_REPORT"]
     }
     missing_keys = []
