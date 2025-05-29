@@ -87,7 +87,7 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
         "inputs": [
             "SOURCE_URL", "SOURCE_ORG", "SOURCE_AUTH_TYPE",
             "SOURCE_APIGEE_VERSION", "TARGET_URL", "GCP_PROJECT_ID",
-            "GCP_ENV_TYPE", "TARGET_DIR", "SSL_VERIFICATION"],
+            "TARGET_DIR", "SSL_VERIFICATION"],
     }
     missing_keys = []
 
@@ -113,10 +113,8 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     source_org = cfg.get('inputs', 'SOURCE_ORG')
     source_auth_token = get_source_auth_token()
     source_auth_type = cfg.get('inputs', 'SOURCE_AUTH_TYPE')
-    try:
-        ssl_verification = cfg.getboolean('inputs', 'SSL_VERIFICATION')
-    except ValueError:
-        ssl_verification = True
+    ssl_verification = cfg.getboolean('inputs', 'SSL_VERIFICATION',
+                                      fallback=True)
     opdk = ApigeeClassic(source_url, source_org,
                          source_auth_token, source_auth_type, ssl_verification)
     if not opdk.get_org():
@@ -242,6 +240,7 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         'oauth',
         True
     )
+    target_compare = cfg.getboolean('inputs', 'TARGET_COMPARE', fallback=False)
     target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
                         'apis', 'sharedflows', 'org_keyvaluemaps',
                         'keyvaluemaps', 'apps', 'apiproducts',
@@ -252,11 +251,11 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     else:
         target_resource_list = [ r for r in resources_list if r in target_resources]  # noqa pylint: disable=C0301
     target_export_data = parse_json(target_export_data_file)
-    if not target_export_data.get('export', False):
+    if target_compare and (not target_export_data.get('export', False)):
         target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
         target_export_data['export'] = True
         write_json(target_export_data_file, target_export_data)
-    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data)  # noqa pylint: disable=C0301
+    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data, target_compare)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
         logger.info(f'Environment -- {env}')  # pylint: disable=W1203

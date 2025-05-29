@@ -200,7 +200,7 @@ def parse_json(file):
             doc = json.loads(fl.read())
         return doc
     except FileNotFoundError:
-        logger.error(f"File \"{file}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
+        logger.warning(f"File \"{file}\" not found", exc_info=EXEC_INFO)  # noqa pylint: disable=W1203
     return {}
 
 
