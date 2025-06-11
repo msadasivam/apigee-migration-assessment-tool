@@ -467,7 +467,8 @@ def visualize_artifacts(cfg, export_data, report):    # noqa pylint: disable=R09
                 if resource in ['targetServers', 'resourcefiles']:
                     if final_report[env + SEPERATOR + resource][name] is not True: # noqa
                         dg.nodes[env + SEPERATOR + name]['color'] = 'red'
-                        dg.nodes[env + SEPERATOR + name]['title'] = '<b>Reason</b> : ' +  final_report[env + SEPERATOR + resource][name][0]['error_msg']['message']   # noqa pylint: disable=C0301
+                        error_message = final_report[env + SEPERATOR + resource][name][0].get('error_msg', {}).get('message', '')  # noqa pylint: disable=C0301
+                        dg.nodes[env + SEPERATOR + name]['title'] = '<b>Reason</b> : ' +  error_message   # noqa pylint: disable=C0301
 
     net = Network(notebook=True, cdn_resources='in_line',
                   width=1000, height=800)
