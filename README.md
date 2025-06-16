@@ -153,6 +153,7 @@ Ensure you have configured `input.properties` and exported authentication tokens
 ```bash
 python3 main.py --resources <your_selected_resources>
 ```
+> Note: `export IGNORE_VIZ="true"` can be leveraged to skip generation of graph visualization for the migration artifacts.
 
 ### Running with Docker
 
@@ -178,6 +179,8 @@ python3 main.py --resources <your_selected_resources>
         "$DOCKER_IMAGE" --resources all
     ```
     *(Adjust `--resources` as needed.)*
+
+    > Note: `-e IGNORE_VIZ="true"` can be leveraged to skip generation of graph visualization for the migration artifacts.
 
 ## Accessing the Report and Visualization
 
