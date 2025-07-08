@@ -63,7 +63,7 @@ SEPERATOR = ' | '
 DEFAULT_GCP_ENV_TYPE = 'ENVIRONMENT_TYPE_UNSPECIFIED'
 
 
-def pre_validation_checks(cfg):  # pylint: disable=R0914
+def pre_validation_checks(cfg, skip_target_checks=False):  # pylint: disable=R0914
     """Performs pre-validation checks on the input configuration.
 
     This function validates the provided configuration `cfg` to ensure
@@ -75,6 +75,8 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     Args:
         cfg (configparser.ConfigParser): The parsed configuration
                                         from input.properties.
+        skip_target_checks (bool): If True, skips checks against the
+                                   target environment.
 
     Returns:
         bool: True if all checks pass, False otherwise.
@@ -120,6 +122,10 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     if not opdk.get_org():
         logger.error("No source organizations found")
         return False
+
+    if skip_target_checks:
+        logger.info("Skipping target environment pre-validation checks as requested by --skip-validation flag.")
+        return True
 
     # check for target org
     target_url = cfg.get('inputs', 'TARGET_URL')
@@ -200,7 +206,7 @@ def export_artifacts(cfg, resources_list):
     return export_data
 
 
-def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disable=R0914,R0912,R0915
+def validate_artifacts(cfg, resources_list, export_data, skip_validation=False):  # noqa pylint: disable=R0914,R0912,R0915
     """Validates exported artifacts against the target environment.
 
     Validates the exported Apigee artifacts against the constraints of
@@ -214,6 +220,8 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
                                         input.properties.
         export_data (dict): A dictionary containing the exported artifact
                             data.
+        skip_validation (bool): If True, skips validation steps that
+                                require a target API call.
 
     Returns:
         dict: A dictionary containing the validation report.
@@ -221,6 +229,12 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     logger.info('------------------- VALIDATE -----------------------')
     backend_cfg = parse_config('backend.properties')
     report = {}
+
+    if skip_validation:
+        logger.info(
+            "Partial validation enabled. Skipping checks that require a target environment (API/SF bundle validation, FlowHook validation)."
+        )
+
     target_dir = cfg.get('inputs', 'TARGET_DIR')
     export_dir = f"{target_dir}/{backend_cfg.get('export', 'EXPORT_DIR')}"
     target_export_dir = f"{target_dir}/target"
@@ -232,15 +246,23 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_env_type = DEFAULT_GCP_ENV_TYPE
-    gcp_token = get_access_token()
-    apigee_export = ApigeeExporter(
-        target_url,
-        gcp_project_id,
-        gcp_token,
-        'oauth',
-        True
-    )
+    gcp_token = None
+    apigee_export = None
+
     target_compare = cfg.getboolean('inputs', 'TARGET_COMPARE', fallback=False)
+    if skip_validation and target_compare:
+        logger.info("Disabling TARGET_COMPARE because --skip-validation is used.")
+        target_compare = False
+
+    if not skip_validation:
+        gcp_token = get_access_token()
+        if not gcp_token:
+            logger.error("Cannot proceed with validation without an access token. Use --skip-validation to bypass target validation.") # noqa
+            return {}
+        apigee_export = ApigeeExporter(
+            target_url, gcp_project_id, gcp_token, 'oauth', True
+        )
+
     target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
                         'apis', 'sharedflows', 'org_keyvaluemaps',
                         'keyvaluemaps', 'apps', 'apiproducts',
@@ -252,10 +274,13 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         target_resource_list = [ r for r in resources_list if r in target_resources]  # noqa pylint: disable=C0301
     target_export_data = parse_json(target_export_data_file)
     if target_compare and (not target_export_data.get('export', False)):
+        if apigee_export is None:
+            logger.error("Internal error: apigee_export client not initialized for target comparison.")
+            return {}
         target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
         target_export_data['export'] = True
         write_json(target_export_data_file, target_export_data)
-    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data, target_compare)  # noqa pylint: disable=C0301
+    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data, target_compare, skip_validation)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
         logger.info(f'Environment -- {env}')  # pylint: disable=W1203
@@ -263,7 +288,7 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         resourcefiles = export_data['envConfig'][env]['resourcefiles']
         flowhooks = export_data['envConfig'][env]['flowhooks']
         keyvaluemaps = export_data['envConfig'][env]['kvms']
-        if 'all' in resources_list or 'keyvaluemaps' in resources_list:
+        if 'all' in resources_list or 'targetservers' in resources_list:
             report[env + SEPERATOR +
                 'targetServers'] = apigee_validator.validate_env_targetservers(env, target_servers)  # noqa pylint: disable=C0301
         if 'all' in resources_list or 'resourcefiles' in resources_list:

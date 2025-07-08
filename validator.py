@@ -40,19 +40,25 @@ class ApigeeValidator():
     rules and compatibility checks.
     """
 
-    def __init__(self, baseurl, project_id, token, env_type, target_export_data, target_compare):    # noqa pylint: disable=R0913,W0012,R0917
+    def __init__(self, baseurl, project_id, token, env_type, target_export_data, target_compare, skip_target_validation=False):    # noqa pylint: disable=R0913,W0012,R0917
         """Initializes ApigeeValidator.
 
         Args:
+            baseurl (str): The base URL for the Apigee API.
             project_id (str): The Google Cloud project ID.
             token (str): The OAuth2 access token.
             env_type (str): The Apigee environment type
                 ('hybrid' or 'x').
+            target_export_data (dict): Data exported from the target.
+            target_compare (bool): Flag to enable comparison with target.
+            skip_target_validation (bool): If True, skips validation that
+                requires a target API call.
         """
         self.project_id = project_id
         self.xorhybrid = ApigeeNewGen(baseurl, project_id, token, env_type)
         self.target_export_data = target_export_data
         self.target_compare = target_compare
+        self.skip_target_validation = skip_target_validation
 
     def validate_org_resource(self, resource_type, resources):
         """Validates environment keyvaluemaps.
@@ -233,7 +239,18 @@ class ApigeeValidator():
         for api_name in export_objects:
             proxy_bundle = f"{api_name}.zip"
             if proxy_bundle in export_bundles:
-                each_validation = self.validate_proxy(bundle_dir, api_type, proxy_bundle)    # noqa pylint: disable=C0301
+                if self.skip_target_validation:
+                    each_validation = {
+                        'name': api_name,
+                        'importable': False,
+                        'reason': [{
+                            'violations': [{'description': 'Validation skipped by user (target unavailable).'}] # noqa
+                        }],
+                        'skipped_validation': True
+                    }
+                else:
+                    each_validation = self.validate_proxy(
+                        bundle_dir, api_type, proxy_bundle)
             else:
                 each_validation['name'] = api_name
                 each_validation['importable'] = False
@@ -295,7 +312,13 @@ class ApigeeValidator():
         for flowhook in flowhooks.keys():
             obj = copy.copy(flowhooks[flowhook])
             obj['name'] = flowhook
-            obj['importable'], obj['reason'] = self.validate_env_flowhooks_resource(env, flowhooks[flowhook])   # noqa pylint: disable=C0301
+            if self.skip_target_validation:
+                obj['importable'] = False
+                obj['reason'] = [{'error_msg': {'message': 'Validation skipped by user (target unavailable).'}}] # noqa
+                obj['skipped_validation'] = True
+            else:
+                obj['importable'], obj['reason'] = self.validate_env_flowhooks_resource(env, flowhooks[flowhook])   # noqa pylint: disable=C0301
+
             fh = self.target_export_data.get('envConfig', {}).get(env, {}).get('flowhooks', {}).keys()    # noqa pylint: disable=C0301
             if not self.target_compare:
                 obj['imported'] = 'UNKNOWN'

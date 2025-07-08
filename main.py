@@ -84,14 +84,21 @@ def main():
         Example1: --resources targetservers,keyvaluemaps
         Example2: --resources keystores,apps
                         """)
+    parser.add_argument('--skip-validation',
+                        action='store_true',
+                        dest='skip_validation',
+                        help='''Skip validation steps that require an API call to a target Apigee environment.
+    This allows for partial validation when a target is unavailable.
+    Specifically, it skips API/SharedFlow bundle validation and FlowHook validation.''')
 
     args = parser.parse_args()
     resources_list = args.resources.split(',') if args.resources else []
+    skip_validation = args.skip_validation
 
     # Pre validation checks
     cfg = parse_config('input.properties')
     backend_cfg = parse_config('backend.properties')
-    if not pre_validation_checks(cfg):
+    if not pre_validation_checks(cfg, skip_validation):
         logger.error("Pre validation checks failed. Please, check...")
         return
 
@@ -122,7 +129,7 @@ def main():
 
     if (not report.get('report', False) or
             not export_data.get('validation_report', False)):
-        report = validate_artifacts(cfg, resources_list, export_data)
+        report = validate_artifacts(cfg, resources_list, export_data, skip_validation)
         report['report'] = True
         export_data['validation_report'] = report
         write_json(export_data_file, export_data)

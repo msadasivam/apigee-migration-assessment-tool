@@ -92,8 +92,8 @@ The tool requires specific permissions to access and analyze your Apigee environ
     | `input` | `SOURCE_ORG`            | Name of your source Apigee organization.                                   |
     | `input` | `SOURCE_AUTH_TYPE`      | Authentication type for the source: `basic` or `oauth`.                     |
     | `input` | `SOURCE_APIGEE_VERSION` | Flavor of your source Apigee: `OPDK`, `SAAS`, `X`, or `HYBRID`.             |
-    | `input` | `TARGET_URL`            | Management URL of your target Apigee X/Hybrid environment (Global or DRZ URL).|
-    | `input` | `GCP_PROJECT_ID`        | GCP Project ID where your target Apigee X/Hybrid instance is running.       |
+    | `input` | `TARGET_URL`            | Management URL of your target Apigee X/Hybrid environment. (Can be a placeholder if using `--skip-validation`).|
+    | `input` | `GCP_PROJECT_ID`        | GCP Project ID where your target Apigee X/Hybrid instance is running. (Can be a placeholder if using `--skip-validation`).|
     | `input` | `TARGET_DIR`            | Name of the directory where exported Apigee objects and reports will be saved (e.g., `output`). |
     | `input` | `TARGET_COMPARE`        | Set to `true` to export apigee objects from target environment and compare with source. Set to `false` to avoid export and compare. |
     | `input` | `SSL_VERIFICATION`      | Set to `false` to ignore SSL certificate verification, or `true` to enforce it. |
@@ -119,9 +119,11 @@ The tool requires specific permissions to access and analyze your Apigee environ
             ```
 
     *   **For Target: Apigee X/Hybrid:**
+        *(Not required if using the `--skip-validation` flag.)*
         ```bash
         export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)
         ```
+
 
 ## Running the Tool
 
@@ -135,6 +137,8 @@ The primary script for running the assessment is `main.py`.
     *   **Available Environment-Level Resources:** `targetservers`, `keyvaluemaps`, `references`, `resourcefiles`, `keystores`, `flowhooks`
     *   **Available Organization-Level Resources:** `org_keyvaluemaps`, `developers`, `apiproducts`, `apis`, `apps`, `sharedflows`
 
+*   `--skip-validation`: Skips validation steps that require an API call to a target Apigee environment. This allows for partial validation when a target is unavailable. Specifically, it skips API/SharedFlow bundle validation and FlowHook validation.
+
     **Examples:**
     ```bash
     # Assess all resources
@@ -145,6 +149,9 @@ The primary script for running the assessment is `main.py`.
 
     # Assess Keystores and Apps
     python3 main.py --resources keystores,apps
+
+    # Assess all resources but skip target validation
+    python3 main.py --resources all --skip-validation
     ```
 
 ### Running Locally
@@ -179,6 +186,16 @@ python3 main.py --resources <your_selected_resources>
         "$DOCKER_IMAGE" --resources all
     ```
     *(Adjust `--resources` as needed.)*
+
+    If using `--skip-validation`, you can omit the `-e APIGEE_ACCESS_TOKEN` line:
+    ```bash
+    docker run --rm \
+        -v "$(pwd)/output:/app/target" \
+        -v "$(pwd)/input.properties:/app/input.properties" \
+        -e SOURCE_AUTH_TOKEN="$SOURCE_AUTH_TOKEN" \
+        "$DOCKER_IMAGE" --resources all --skip-validation
+    ```
+
 
     > Note: `-e IGNORE_VIZ="true"` can be leveraged to skip generation of graph visualization for the migration artifacts.
 

@@ -990,12 +990,18 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                 col += 1
                 validation_report_sheet.write(row, col, values['name'])
                 col += 1
-                if values['importable']:
+                if values.get('skipped_validation'):
+                    validation_report_sheet.write(
+                        row, col, 'SKIPPED', self.yellow_format)
+                    col += 1
+                    validation_report_sheet.write(
+                        row, col, 'Validation skipped by user (target unavailable).') # noqa
+                elif values.get('importable'):
                     validation_report_sheet.write(row, col, values['importable'], self.green_format)   # noqa pylint: disable=C0301
                     col += 1
                     validation_report_sheet.write(row, col, 'N/A')
-                if not values['importable']:
-                    validation_report_sheet.write(row, col, values['importable'], self.danger_format)   # noqa pylint: disable=C0301
+                elif not values.get('importable'):
+                    validation_report_sheet.write(row, col, values.get('importable'), self.danger_format)   # noqa pylint: disable=C0301
                     col += 1
                     reason_str = {}
                     violations = values.get('reason', [{'violations': []}])
@@ -1015,7 +1021,8 @@ class QualificationReport():  # noqa pylint: disable=R0902,R0904
                 else:
                     validation_report_sheet.write(row, col, 'UNKNOWN')
                 row += 1
-        validation_report_sheet.autofit()
+        # Autofit can be slow with many rows, consider setting fixed widths if needed
+        # validation_report_sheet.autofit()
 
     def report_org_resourcefiles(self):
         """Generates the "Org Level Resourcefiles" report sheet."""
