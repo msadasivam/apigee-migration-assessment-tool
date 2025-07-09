@@ -40,7 +40,7 @@ class ApigeeValidator():
     rules and compatibility checks.
     """
 
-    def __init__(self, baseurl, project_id, token, env_type, target_export_data, target_compare):    # noqa pylint: disable=R0913,W0012,R0917
+    def __init__(self, baseurl, project_id, token, env_type, target_export_data, target_compare, skip_target_validation=False):    # noqa pylint: disable=R0913,W0012,R0917
         """Initializes ApigeeValidator.
 
         Args:
@@ -50,9 +50,13 @@ class ApigeeValidator():
                 ('hybrid' or 'x').
         """
         self.project_id = project_id
-        self.xorhybrid = ApigeeNewGen(baseurl, project_id, token, env_type)
         self.target_export_data = target_export_data
         self.target_compare = target_compare
+        self.skip_target_validation = skip_target_validation
+        if not self.skip_target_validation:
+            self.xorhybrid = ApigeeNewGen(baseurl, project_id, token, env_type)
+        else:
+            self.xorhybrid = None
 
     def validate_org_resource(self, resource_type, resources):
         """Validates environment keyvaluemaps.
@@ -266,6 +270,13 @@ class ApigeeValidator():
             dict: Validation result for the proxy.
         """
         api_name = proxy_bundle.split(".zip")[0]
+        if self.skip_target_validation:
+            return {
+                'name': api_name,
+                'importable': False,
+                'reason': [{'violations': ['Validation skipped by user flag.']}]
+            }
+
         validation_response = self.xorhybrid.create_api(
                                 each_api_type,
                                 api_name,
@@ -318,6 +329,11 @@ class ApigeeValidator():
             tuple: Importability (bool) and
                 reasons (list).
         """
+        if self.skip_target_validation:
+            return False, [{
+                'key': 'sharedFlow',
+                'error_msg': 'Validation skipped by user flag.'
+            }]
         errors = []
         if "sharedFlow" in flowhook:
             env_sf_deployment = self.xorhybrid.get_env_object(env, "sharedflows", flowhook["sharedFlow"]+"/deployments")   # noqa pylint: disable=C0301

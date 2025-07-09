@@ -63,7 +63,7 @@ SEPERATOR = ' | '
 DEFAULT_GCP_ENV_TYPE = 'ENVIRONMENT_TYPE_UNSPECIFIED'
 
 
-def pre_validation_checks(cfg):  # pylint: disable=R0914
+def pre_validation_checks(cfg, skip_target_validation=False):  # pylint: disable=R0914
     """Performs pre-validation checks on the input configuration.
 
     This function validates the provided configuration `cfg` to ensure
@@ -75,6 +75,8 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     Args:
         cfg (configparser.ConfigParser): The parsed configuration
                                         from input.properties.
+        skip_target_validation (bool): Whether to skip target validation
+                                        checks.
 
     Returns:
         bool: True if all checks pass, False otherwise.
@@ -120,6 +122,11 @@ def pre_validation_checks(cfg):  # pylint: disable=R0914
     if not opdk.get_org():
         logger.error("No source organizations found")
         return False
+
+    if skip_target_validation:
+        logger.info(
+            "Skipping target pre-validation checks as --skip-target-validation is set.")
+        return True
 
     # check for target org
     target_url = cfg.get('inputs', 'TARGET_URL')
@@ -200,7 +207,7 @@ def export_artifacts(cfg, resources_list):
     return export_data
 
 
-def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disable=R0914,R0912,R0915
+def validate_artifacts(cfg, resources_list, export_data, skip_target_validation=False):  # noqa pylint: disable=R0914,R0912,R0915
     """Validates exported artifacts against the target environment.
 
     Validates the exported Apigee artifacts against the constraints of
@@ -232,15 +239,15 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
     target_url = cfg.get('inputs', 'TARGET_URL')
     gcp_project_id = cfg.get('inputs', 'GCP_PROJECT_ID')
     gcp_env_type = DEFAULT_GCP_ENV_TYPE
-    gcp_token = get_access_token()
-    apigee_export = ApigeeExporter(
-        target_url,
-        gcp_project_id,
-        gcp_token,
-        'oauth',
-        True
-    )
-    target_compare = cfg.getboolean('inputs', 'TARGET_COMPARE', fallback=False)
+    gcp_token = None
+    if not skip_target_validation:
+        gcp_token = get_access_token()
+    target_compare = cfg.getboolean(
+        'inputs', 'TARGET_COMPARE', fallback=False)
+    if target_compare and skip_target_validation:
+        logger.warning(
+            "TARGET_COMPARE is set to true, but --skip-target-validation is also used. Disabling target comparison.")
+        target_compare = False
     target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
                         'apis', 'sharedflows', 'org_keyvaluemaps',
                         'keyvaluemaps', 'apps', 'apiproducts',
@@ -252,10 +259,17 @@ def validate_artifacts(cfg, resources_list, export_data):  # noqa pylint: disabl
         target_resource_list = [ r for r in resources_list if r in target_resources]  # noqa pylint: disable=C0301
     target_export_data = parse_json(target_export_data_file)
     if target_compare and (not target_export_data.get('export', False)):
+        apigee_export = ApigeeExporter(
+            target_url,
+            gcp_project_id,
+            gcp_token,
+            'oauth',
+            True
+        )
         target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
         target_export_data['export'] = True
         write_json(target_export_data_file, target_export_data)
-    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data, target_compare)  # noqa pylint: disable=C0301
+    apigee_validator = ApigeeValidator(target_url, gcp_project_id, gcp_token, gcp_env_type, target_export_data, target_compare, skip_target_validation)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
         logger.info(f'Environment -- {env}')  # pylint: disable=W1203
