@@ -84,6 +84,11 @@ def main():
         Example1: --resources targetservers,keyvaluemaps
         Example2: --resources keystores,apps
                         """)
+    parser.add_argument('--skip-target-validation',
+                        action='store_true',
+                        default=False,
+                        dest='skip_target_validation',
+                        help='Skip validation of APIs and SharedFlows against the target environment.')
 
     args = parser.parse_args()
     resources_list = args.resources.split(',') if args.resources else []
@@ -91,7 +96,7 @@ def main():
     # Pre validation checks
     cfg = parse_config('input.properties')
     backend_cfg = parse_config('backend.properties')
-    if not pre_validation_checks(cfg):
+    if not pre_validation_checks(cfg, args.skip_target_validation):
         logger.error("Pre validation checks failed. Please, check...")
         return
 
@@ -122,7 +127,7 @@ def main():
 
     if (not report.get('report', False) or
             not export_data.get('validation_report', False)):
-        report = validate_artifacts(cfg, resources_list, export_data)
+        report = validate_artifacts(cfg, resources_list, export_data, args.skip_target_validation)
         report['report'] = True
         export_data['validation_report'] = report
         write_json(export_data_file, export_data)
