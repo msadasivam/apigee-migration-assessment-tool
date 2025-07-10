@@ -24,6 +24,7 @@ on:  # yamllint disable-line rule:truthy
       - '**.md'
     branches:
       - main
+  workflow_dispatch:
 
 permissions: read-all
 
