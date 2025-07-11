@@ -246,7 +246,8 @@ def validate_artifacts(cfg, resources_list, export_data, skip_target_validation=
         'inputs', 'TARGET_COMPARE', fallback=False)
     if target_compare and skip_target_validation:
         logger.warning("TARGET_COMPARE is set to true, but "
-            "--skip-target-validation is also used. Disabling target comparison.")
+                        "--skip-target-validation is also used. "
+                        "Disabling target comparison.")
         target_compare = False
     target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
                         'apis', 'sharedflows', 'org_keyvaluemaps',
