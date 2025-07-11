@@ -122,6 +122,7 @@ The tool requires specific permissions to access and analyze your Apigee environ
         ```bash
         export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)
         ```
+        > **Note:** This token is not required if you use the `--skip-target-validation` flag.
 
 ## Running the Tool
 
@@ -135,6 +136,8 @@ The primary script for running the assessment is `main.py`.
     *   **Available Environment-Level Resources:** `targetservers`, `keyvaluemaps`, `references`, `resourcefiles`, `keystores`, `flowhooks`
     *   **Available Organization-Level Resources:** `org_keyvaluemaps`, `developers`, `apiproducts`, `apis`, `apps`, `sharedflows`
 
+*   `--skip-target-validation`: (Optional) Skips the validation of API proxies and SharedFlows against the target Apigee environment. This is useful for running the tool without needing credentials for the target environment.
+
     **Examples:**
     ```bash
     # Assess all resources
@@ -145,6 +148,9 @@ The primary script for running the assessment is `main.py`.
 
     # Assess Keystores and Apps
     python3 main.py --resources keystores,apps
+
+    # Assess all resources without validating against a target environment
+    python3 main.py --resources all --skip-target-validation
     ```
 
 ### Running Locally
@@ -179,6 +185,17 @@ python3 main.py --resources <your_selected_resources>
         "$DOCKER_IMAGE" --resources all
     ```
     *(Adjust `--resources` as needed.)*
+
+    > Note: `-e IGNORE_VIZ="true"` can be leveraged to skip generation of graph visualization for the migration artifacts.
+
+    To run without target validation (and without the `APIGEE_ACCESS_TOKEN`):
+    ```bash
+    docker run --rm \
+        -v "$(pwd)/output:/app/target" \
+        -v "$(pwd)/input.properties:/app/input.properties" \
+        -e SOURCE_AUTH_TOKEN="$SOURCE_AUTH_TOKEN" \
+        "$DOCKER_IMAGE" --resources all --skip-target-validation
+    ```
 
     > Note: `-e IGNORE_VIZ="true"` can be leveraged to skip generation of graph visualization for the migration artifacts.
 
