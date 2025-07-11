@@ -245,8 +245,8 @@ def validate_artifacts(cfg, resources_list, export_data, skip_target_validation=
     target_compare = cfg.getboolean(
         'inputs', 'TARGET_COMPARE', fallback=False)
     if target_compare and skip_target_validation:
-        logger.warning(
-            "TARGET_COMPARE is set to true, but --skip-target-validation is also used. Disabling target comparison.")
+        logger.warning("TARGET_COMPARE is set to true, but "
+        "--skip-target-validation is also used. Disabling target comparison.")
         target_compare = False
     target_resources = ['targetservers', 'flowhooks', 'resourcefiles',
                         'apis', 'sharedflows', 'org_keyvaluemaps',
@@ -269,9 +269,9 @@ def validate_artifacts(cfg, resources_list, export_data, skip_target_validation=
         target_export_data = apigee_export.get_export_data(target_resource_list, target_export_dir)  # noqa pylint: disable=C0301
         target_export_data['export'] = True
         write_json(target_export_data_file, target_export_data)
-    apigee_validator = ApigeeValidator(target_url, 
-                                       gcp_project_id, gcp_token, gcp_env_type, 
-                                       target_export_data, target_compare, 
+    apigee_validator = ApigeeValidator(target_url,
+                                       gcp_project_id, gcp_token, gcp_env_type,
+                                       target_export_data, target_compare,
                                        skip_target_validation)  # noqa pylint: disable=C0301
 
     for env, _ in export_data['envConfig'].items():
