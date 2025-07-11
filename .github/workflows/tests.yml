@@ -19,11 +19,16 @@ on:  # yamllint disable-line rule:truthy
   push:
     paths-ignore:
       - '**.md'
-  pull_request:
+  pull_request_target:
     paths-ignore:
       - '**.md'
     branches:
       - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
 
 permissions: read-all
 
