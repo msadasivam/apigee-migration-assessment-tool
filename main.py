@@ -88,7 +88,8 @@ def main():
                         action='store_true',
                         default=False,
                         dest='skip_target_validation',
-                        help='Skip validation of APIs and SharedFlows against the target environment.')
+                        help='Skip validation of APIs and SharedFlows ' \
+                        'against the target environment.')
 
     args = parser.parse_args()
     resources_list = args.resources.split(',') if args.resources else []
@@ -127,7 +128,9 @@ def main():
 
     if (not report.get('report', False) or
             not export_data.get('validation_report', False)):
-        report = validate_artifacts(cfg, resources_list, export_data, args.skip_target_validation)
+        report = validate_artifacts(cfg, resources_list, 
+                                    export_data, 
+                                    args.skip_target_validation)
         report['report'] = True
         export_data['validation_report'] = report
         write_json(export_data_file, export_data)
